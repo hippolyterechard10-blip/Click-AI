@@ -229,16 +229,14 @@ body{
   <div id="sb">
     <div class="sb-head">
       <div class="sb-logo">✦ AI Panel</div>
-      <button class="sb-gear" onclick="testFixed()">⚙</button>
+      <button class="sb-gear" onclick="openOv('ov-settings')">⚙</button>
     </div>
     <div class="proj-row" id="proj-bar"></div>
     <div class="conv-ul" id="conv-list"></div>
     <button class="new-q" onclick="newConv()">＋ New question</button>
     <div class="sb-foot">
       <button class="keys-btn" data-action="settings" onclick="openOv('ov-settings')">🔑 API Keys &amp; Settings</button>
-    </div>
-    <button onclick="microTest()" style="margin:6px 8px;padding:8px;background:#C0392B;color:white;border:none;border-radius:8px;font-size:11px;font-weight:700;cursor:pointer;">🔴 MICRO TEST</button>
-</div>
+    </div></div>
 
   <!-- MAIN -->
 
@@ -247,7 +245,7 @@ body{
       <button id="menu-btn" data-action="toggle-sb" onclick="toggleSB()">☰</button>
       <div class="top-info">
         <div id="top-title">AI Panel</div>
-        <div id="top-sub">3 AIs · 1 synthesized answer <span style="background:#C9A84C;color:#2C2416;font-size:9px;font-weight:700;padding:1px 5px;border-radius:4px;margin-left:4px">v9</span></div>
+        <div id="top-sub">3 AIs · 1 synthesized answer <span style="background:#C9A84C;color:#2C2416;font-size:9px;font-weight:700;padding:1px 5px;border-radius:4px;margin-left:4px">v10</span></div>
       </div>
       <div class="top-right">
         <div id="badges"></div>
@@ -344,17 +342,6 @@ body{
 
   <div id="toast"></div>
 </div>
-
-<script>
-/* ISOLATED TEST - separate from main app */
-function microTest(){
-  var d=document.createElement('div');
-  d.style.cssText='position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(255,0,0,0.9);z-index:999999;display:flex;align-items:center;justify-content:center;font-size:28px;font-weight:bold;color:white;cursor:pointer;font-family:sans-serif;';
-  d.textContent='JS WORKS - TAP TO CLOSE';
-  d.onclick=function(){if(d.parentNode)d.parentNode.removeChild(d);};
-  document.body.appendChild(d);
-}
-</script>
 
 <script>
 // Error reporter
@@ -726,20 +713,19 @@ function fmtDate(ts){if(!ts)return'';var d=new Date(ts),n=new Date(),diff=n-d;if
 function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
 function showToast(msg,type,dur){var t=document.getElementById('toast');t.textContent=msg;t.className='on'+(type?' '+type:'');clearTimeout(t._t);t._t=setTimeout(function(){t.className='';},dur||2400);}
 function md(t){
-  return String(t||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
-    .replace(/```([\s\S]*?)```/g,'<pre><code>$1</code></pre>')
+  var K=String.fromCharCode(96),K3=K+K+K;
+  t=String(t||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  t=t.replace(new RegExp(K3+'([\s\S]*?)'+K3,'g'),'<pre><code>$1</code></pre>');
 
-```
-.replace(/`([^`]+)`/g,'<code>$1</code>')
-.replace(/\*\*([^*]+)\*\*/g,'<strong>$1</strong>')
-.replace(/\*([^*\n]+)\*/g,'<em>$1</em>')
-.replace(/^#{1,3} (.+)$/gm,'<strong>$1</strong>')
-.replace(/^[-*] (.+)$/gm,'<li>$1</li>')
-.replace(/(<li>.*<\/li>\n?)+/g,'<ul>$&</ul>')
-.replace(/\n\n+/g,'</p><p>')
-.replace(/\n/g,'<br>');
-```
-
+t=t.replace(new RegExp(K+’([^’+K+’]+)’+K,‘g’),’<code>$1</code>’);
+t=t.replace(/[*][*]([^*]+)[*][*]/g,’<strong>$1</strong>’);
+t=t.replace(/[*]([^*]+)[*]/g,’<em>$1</em>’);
+t=t.replace(/^[#]+ (.+)$/gm,’<strong>$1</strong>’);
+t=t.replace(/^[-] (.+)$/gm,’<li>$1</li>’);
+t=t.replace(/((<li>[^<]*<[/]li>)[ \n]*)+/g,’<ul>$&</ul>’);
+t=t.replace(/[ \n][ \n]+/g,’</p><p>’);
+t=t.replace(/\n/g,’<br>’);
+return t;
 }
 
 // ── Attach all event handlers via addEventListener ──
@@ -803,15 +789,6 @@ window.clearConv=clearConv;window.renameConv=renameConv;window.doRename=doRename
 window.clearConv=clearConv;window.ask=ask;window.toggleVoice=toggleVoice;
 window.saveProj=saveProj;window.deleteProj=deleteProj;window.editProj=editProj;
 window.resetProj=resetProj;window.switchProj=switchProj;window.switchConv=switchConv;
-
-function testFixed(){
-// Test 1: direct style via JS
-var d = document.createElement(‘div’);
-d.style.cssText = ‘position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.8);z-index:99999;display:flex;align-items:center;justify-content:center;color:white;font-size:24px;font-family:sans-serif;’;
-d.textContent = ‘TAP HERE TO CLOSE - FIXED WORKS!’;
-d.onclick = function(){ document.body.removeChild(d); };
-document.body.appendChild(d);
-}
 
 init();
 setupEvents();
