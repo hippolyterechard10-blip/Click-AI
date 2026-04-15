@@ -235,6 +235,7 @@
     </div>
     <div class="top-right">
       <div id="badges"></div>
+      <button class="top-btn" id="btn-share" type="button" title="Share">🔗</button>
       <button class="top-btn" id="btn-clear" type="button">🗑</button>
       <button class="top-btn" id="btn-rename" type="button">✏️</button>
     </div>
@@ -274,11 +275,18 @@
       <div class="s-row"><span class="s-key" style="color:#4A7FA5">Gemini</span><input class="s-in" id="k-gem" type="password" autocomplete="off" placeholder="AIza…" /></div>
       <div class="s-row"><span class="s-key" style="color:#27AE60">OpenAI</span><input class="s-in" id="k-oai" type="password" autocomplete="off" placeholder="sk-…" /></div>
     </div>
-    <div class="s-sec">🔍 Web Search</div>
+    <div class="s-note">🔒 Clés stockées dans ton navigateur uniquement. Le bouton 🔍 active la recherche web native (Claude web_search, Gemini google_search, GPT-4o search-preview) — comme dans les apps.</div>
+    <div class="s-sec">☁️ Cloud sync &amp; partage (Supabase)</div>
     <div class="s-group">
-      <div class="s-row"><span class="s-key" style="color:#4A7FA5">Tavily</span><input class="s-in" id="k-tavily" type="password" autocomplete="off" placeholder="tvly-…" /></div>
+      <div class="s-row"><span class="s-key" style="color:#4A7FA5">URL</span><input class="s-in" id="sb-url" autocomplete="off" placeholder="https://xxx.supabase.co" /></div>
+      <div class="s-row"><span class="s-key" style="color:#4A7FA5">Anon key</span><input class="s-in" id="sb-anon" type="password" autocomplete="off" placeholder="eyJhbGciOi…" /></div>
     </div>
-    <div class="s-note">🔒 Keys saved in your browser only. Tavily gratuit sur tavily.com (1000 recherches/mois).</div>
+    <div class="s-group" id="sb-auth-group">
+      <div class="s-row" id="sb-signed-out"><span class="s-lbl">Email</span><input class="s-in" id="sb-email" type="email" autocomplete="email" placeholder="you@example.com" /></div>
+      <div class="s-row" id="sb-signed-out-btn" style="cursor:pointer"><span class="s-lbl" style="color:#C9A84C;font-weight:600" id="sb-signin-lbl">Envoyer le magic link</span></div>
+      <div class="s-row" id="sb-signed-in" style="display:none"><span class="s-lbl" id="sb-user-email">—</span><button class="top-btn" id="sb-signout" type="button" style="background:#F5F0E8">Sign out</button></div>
+    </div>
+    <div class="s-note" id="sb-status">Non connecté · tout est local.</div>
     <div class="s-sec">📂 Projects</div>
     <div class="s-group">
       <div class="s-row" id="btn-new-proj" style="cursor:pointer"><span class="s-lbl">New Project</span><span class="s-arr">›</span></div>
@@ -318,6 +326,11 @@
 
   </div>
 
+  <script type="module">
+    import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
+    window._supabaseCreateClient = createClient;
+    window.dispatchEvent(new Event('supabase-sdk-ready'));
+  </script>
   <script>
     window.onerror = function(msg, src, line){
       showToast('JS Error L' + line + ': ' + msg, 'err', 5000);
@@ -329,11 +342,12 @@
     });
 
     var COLORS = ['#C9A84C','#4A7FA5','#A85C3A','#4A7A5A','#6B5B95','#8B6914','#3A7A7A','#C0392B'];
-    var KEYS = ['k-ant','k-gem','k-oai','k-tavily'];
+    var KEYS = ['k-ant','k-gem','k-oai','sb-url','sb-anon'];
     var TIMEOUT = 25000;
 
     var busy = false, editPid = null, voiceRec = null, voiceOn = false, webOn = false;
     var imgs = [], projs = [], pid = null, convs = [], cid = null;
+    var sbc = null, sbUser = null, sharedView = false;
 
     function ls(k, v){
       try{
@@ -368,6 +382,11 @@
     }
 
     function init(){
+      loadKeys();
+
+      var params = new URLSearchParams(location.search);
+      var shareId = params.get('share');
+
       projs = ls('_p_projs') || [];
       if(!projs.length){
         projs = [{id:'p0', name:'General', color:'#C9A84C'}];
@@ -378,14 +397,30 @@
       cid = convs.length ? convs[0].id : null;
 
       render();
-      loadKeys();
       renderBadges();
       initVoice();
       bindEvents();
       updateSend();
+
+      if(shareId){
+        openShared(shareId);
+        return;
+      }
+
+      initSupabase();
+
+      if(location.hash === '#auth-callback' || params.get('type')){
+        history.replaceState(null, '', location.pathname);
+      }
     }
 
-    function save(){ ls('_p_c_' + pid, convs); }
+    function save(){
+      ls('_p_c_' + pid, convs);
+      if(sbc && sbUser){
+        var c = cur();
+        if(c) sbSaveConv(c);
+      }
+    }
     function cur(){ return convs.find(function(c){ return c.id === cid; }) || null; }
     function curP(){ return projs.find(function(p){ return p.id === pid; }) || null; }
 
@@ -566,7 +601,8 @@
     function delConv(id){
       convs = convs.filter(function(c){ return c.id !== id; });
       if(cid === id) cid = convs.length ? convs[0].id : null;
-      save();
+      ls('_p_c_' + pid, convs);
+      sbDeleteConv(id);
       renderConvs();
       renderHist();
       renderHead();
@@ -613,33 +649,14 @@
     }
 
     function toggleWeb(){
-      var key = getKey('k-tavily');
-      if(!key){ openOv('ov-settings'); showToast('Add your Tavily key first', 'err'); return; }
       webOn = !webOn;
       var btn = document.getElementById('web-btn');
       btn.classList.toggle('web-on', webOn);
-      showToast(webOn ? '🔍 Web search ON' : 'Web search OFF');
+      showToast(webOn ? '🔍 Live web search ON' : 'Web search OFF');
     }
 
-    async function searchWeb(query){
-      var key = getKey('k-tavily');
-      if(!key) return null;
-      try{
-        var r = await fetch('https://api.tavily.com/search', {
-          method: 'POST',
-          headers: {'Content-Type':'application/json'},
-          body: JSON.stringify({api_key:key, query:query, search_depth:'basic', max_results:5, include_answer:true})
-        });
-        var d = await r.json();
-        if(!d.results) return null;
-        var ctx = '';
-        if(d.answer) ctx += 'Quick answer: ' + d.answer + '\n\n';
-        ctx += 'Web sources:\n';
-        d.results.slice(0,5).forEach(function(res, i){
-          ctx += (i+1) + '. ' + res.title + '\n' + (res.content||'').slice(0,300) + '\n\n';
-        });
-        return ctx;
-      }catch(e){ return null; }
+    async function searchWeb(_query){
+      return null;
     }
 
     function onImgs(files){
@@ -799,22 +816,16 @@
       qb.textContent = q || (curImgs.length ? '[Image]' : '');
       turn.appendChild(qb);
 
-      var webCtx = null;
       var didSearch = false;
 
-      if(webOn && q){
+      if(webOn){
         var wp = document.createElement('div');
         wp.className = 'web-pill';
-        wp.textContent = '🔍 Searching…';
+        wp.textContent = '🔍 Live web search';
         turn.appendChild(wp);
-        document.getElementById('hist').appendChild(turn);
-        scrollDown();
-        webCtx = await searchWeb(q);
-        wp.textContent = webCtx ? '🔍 Web search' : '🔍 No results';
         didSearch = true;
-      } else {
-        document.getElementById('hist').appendChild(turn);
       }
+      document.getElementById('hist').appendChild(turn);
 
       var loader = mkLoader();
       turn.appendChild(loader);
@@ -822,8 +833,6 @@
 
       var gemKey = getKey('k-gem'), oaiKey = getKey('k-oai');
       var res = {claude:null, gemini:null, gpt:null};
-
-      var webPrefix = webCtx ? ('Here are current web search results for context:\n\n' + webCtx + '\n\nNow answer this question using the above information:\n') : '';
 
       function dot(id, cls, txt){
         var d = document.getElementById('d-' + id);
@@ -846,16 +855,17 @@
         ]);
       }
 
-      var claudeQ = webPrefix ? webPrefix + (q || '.') : null;
+      var useWeb = !!webOn;
+      var WEB_TIMEOUT = useWeb ? 45000 : TIMEOUT;
 
       await Promise.all([
-        wt(apiClaude(antKey, claudeMsgs(claudeQ || q, curImgs)), TIMEOUT, 'Claude')
+        wt(apiClaude(antKey, claudeMsgs(q, curImgs), useWeb), WEB_TIMEOUT, 'Claude')
           .then(function(r){ res.claude = r; dot('claude','ok','✓'); })
           .catch(function(e){ dot('claude','er', e.message.slice(0,28)); }),
-        gemKey ? wt(apiGemini(gemKey, webPrefix ? webPrefix + (q||'.') : q, curImgs), TIMEOUT, 'Gemini')
+        gemKey ? wt(apiGemini(gemKey, q, curImgs, useWeb), WEB_TIMEOUT, 'Gemini')
           .then(function(r){ res.gemini = r; dot('gemini','ok','✓'); })
           .catch(function(e){ dot('gemini','er', e.message.slice(0,28)); }) : Promise.resolve(),
-        oaiKey ? wt(apiGPT(oaiKey, webPrefix ? webPrefix + (q||'.') : q, curImgs), TIMEOUT, 'GPT-4o')
+        oaiKey ? wt(apiGPT(oaiKey, q, curImgs, useWeb), WEB_TIMEOUT, 'GPT-4o')
           .then(function(r){ res.gpt = r; dot('gpt','ok','✓'); })
           .catch(function(e){ dot('gpt','er', e.message.slice(0,28)); }) : Promise.resolve()
       ]);
@@ -884,7 +894,7 @@
         lines.push('Based on these responses, write one clear recommended answer. Be direct and concise.');
 
         try{
-          rec = await wt(apiClaude(antKey, [{role:'user', content:lines.join('\n')}]), TIMEOUT, 'Synthesis');
+          rec = await wt(apiClaude(antKey, [{role:'user', content:lines.join('\n')}], false), TIMEOUT, 'Synthesis');
           setSt('Done ✓');
         }catch(e){
           rec = 'Synthesis error: ' + e.message;
@@ -901,7 +911,7 @@
         imgs:curImgs.map(function(i){ return i.src; }),
         ais:ais,
         rec:rec,
-        web: didSearch && !!webCtx
+        web: didSearch
       });
       conv.at = Date.now();
 
@@ -984,7 +994,15 @@
       return [{role:'user', content:parts}];
     }
 
-    async function apiClaude(key, msgs){
+    async function apiClaude(key, msgs, useWeb){
+      var body = {
+        model:'claude-sonnet-4-20250514',
+        max_tokens:2000,
+        messages:msgs
+      };
+      if(useWeb){
+        body.tools = [{type:'web_search_20250305', name:'web_search', max_uses:3}];
+      }
       var r = await fetch('https://api.anthropic.com/v1/messages', {
         method:'POST',
         headers:{
@@ -993,18 +1011,20 @@
           'anthropic-version':'2023-06-01',
           'anthropic-dangerous-direct-browser-access':'true'
         },
-        body:JSON.stringify({
-          model:'claude-sonnet-4-20250514',
-          max_tokens:2000,
-          messages:msgs
-        })
+        body:JSON.stringify(body)
       });
       var d = await r.json();
       if(d.error) throw new Error(d.error.message);
-      return d.content[0].text;
+      if(!d.content || !d.content.length) throw new Error('Claude returned no content');
+      var out = '';
+      d.content.forEach(function(b){
+        if(b.type === 'text' && b.text) out += b.text;
+      });
+      if(!out) throw new Error('Claude returned no text');
+      return out;
     }
 
-    async function apiGemini(key, q, imgs){
+    async function apiGemini(key, q, imgs, useWeb){
       var parts = [];
       if(imgs && imgs.length){
         imgs.forEach(function(i){
@@ -1014,19 +1034,37 @@
       if(q) parts.push({text:q});
       if(!parts.length) parts = [{text:'.'}];
 
+      var body = {contents:[{parts:parts}]};
+      if(useWeb && !(imgs && imgs.length)){
+        body.tools = [{google_search:{}}];
+      }
+
       var r = await fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=' + key, {
         method:'POST',
         headers:{'Content-Type':'application/json'},
-        body:JSON.stringify({contents:[{parts:parts}]})
+        body:JSON.stringify(body)
       });
 
       var d = await r.json();
       if(d.error) throw new Error(d.error.message);
+      if(d.promptFeedback && d.promptFeedback.blockReason){
+        throw new Error('Blocked: ' + d.promptFeedback.blockReason);
+      }
       if(!d.candidates || !d.candidates.length) throw new Error('No response from Gemini');
-      return d.candidates[0].content.parts[0].text;
+      var cand = d.candidates[0];
+      if(cand.finishReason && cand.finishReason !== 'STOP' && cand.finishReason !== 'MAX_TOKENS' && (!cand.content || !cand.content.parts)){
+        throw new Error('Gemini: ' + cand.finishReason);
+      }
+      if(!cand.content || !cand.content.parts || !cand.content.parts.length){
+        throw new Error('Gemini returned empty content');
+      }
+      var txt = '';
+      cand.content.parts.forEach(function(p){ if(p.text) txt += p.text; });
+      if(!txt) throw new Error('Gemini returned no text');
+      return txt;
     }
 
-    async function apiGPT(key, q, imgs){
+    async function apiGPT(key, q, imgs, useWeb){
       var content = [];
       if(imgs && imgs.length){
         imgs.forEach(function(i){
@@ -1036,21 +1074,29 @@
       if(q) content.push({type:'text', text:q});
       if(!content.length) content = [{type:'text', text:'.'}];
 
+      var body = {
+        messages:[{role:'user', content:content}]
+      };
+      if(useWeb && !(imgs && imgs.length)){
+        body.model = 'gpt-4o-mini-search-preview';
+        body.max_tokens = 2000;
+      } else {
+        body.model = 'gpt-4o-mini';
+        body.max_tokens = 2000;
+      }
+
       var r = await fetch('https://api.openai.com/v1/chat/completions', {
         method:'POST',
         headers:{
           'Content-Type':'application/json',
           'Authorization':'Bearer ' + key
         },
-        body:JSON.stringify({
-          model:'gpt-4o-mini',
-          max_tokens:2000,
-          messages:[{role:'user', content:content}]
-        })
+        body:JSON.stringify(body)
       });
 
       var d = await r.json();
       if(d.error) throw new Error(d.error.message);
+      if(!d.choices || !d.choices.length) throw new Error('GPT returned no choices');
       return d.choices[0].message.content;
     }
 
@@ -1094,19 +1140,21 @@
       var name = document.getElementById('proj-in').value.trim();
       if(!name){ showToast('Enter a name','err'); return; }
 
-      var color = getColor();
+      var color = getColor(), saved = null;
       if(editPid){
         var p = projs.find(function(x){ return x.id === editPid; });
-        if(p){ p.name = name; p.color = color; }
+        if(p){ p.name = name; p.color = color; saved = p; }
       } else {
         var id = 'p' + Date.now();
-        projs.push({id:id, name:name, color:color});
+        saved = {id:id, name:name, color:color};
+        projs.push(saved);
         pid = id;
         convs = [];
         cid = null;
       }
 
       ls('_p_projs', projs);
+      if(saved) sbSaveProj(saved);
       render();
       closeOv('ov-proj');
     }
@@ -1118,9 +1166,11 @@
       }
       if(!confirm('Delete project and all questions?')) return;
 
-      projs = projs.filter(function(p){ return p.id !== editPid; });
+      var delId = editPid;
+      projs = projs.filter(function(p){ return p.id !== delId; });
       ls('_p_projs', projs);
-      try{ localStorage.removeItem('_p_c_' + editPid); }catch(e){}
+      try{ localStorage.removeItem('_p_c_' + delId); }catch(e){}
+      sbDeleteProj(delId);
 
       pid = projs[0].id;
       convs = ls('_p_c_' + pid) || [];
@@ -1142,6 +1192,263 @@
     function closeSB(){
       document.getElementById('sb').classList.remove('open');
       document.getElementById('sb-ov').classList.remove('on');
+    }
+
+    function sbReady(){ return !!(sbc && sbUser); }
+
+    function updateAuthUI(){
+      var out = document.getElementById('sb-signed-out');
+      var outBtn = document.getElementById('sb-signed-out-btn');
+      var ind = document.getElementById('sb-signed-in');
+      var st = document.getElementById('sb-status');
+      if(!out) return;
+      if(sbUser){
+        out.style.display = 'none';
+        outBtn.style.display = 'none';
+        ind.style.display = 'flex';
+        document.getElementById('sb-user-email').textContent = sbUser.email || 'Signed in';
+        if(st) st.textContent = '✓ Connecté · tes conversations sont synchronisées.';
+      } else {
+        out.style.display = 'flex';
+        outBtn.style.display = 'flex';
+        ind.style.display = 'none';
+        if(st) st.textContent = sbc ? 'Prêt · entre ton email pour te connecter.' : 'Ajoute URL + anon key pour activer la synchro cloud.';
+      }
+    }
+
+    function initSupabase(){
+      var url = getKey('sb-url'), anon = getKey('sb-anon');
+      if(!url || !anon){ updateAuthUI(); return; }
+
+      function boot(){
+        if(!window._supabaseCreateClient) return;
+        try{
+          sbc = window._supabaseCreateClient(url, anon, {
+            auth:{persistSession:true, autoRefreshToken:true, detectSessionInUrl:true, storage:window.localStorage}
+          });
+        }catch(e){
+          showToast('Supabase init error: ' + e.message, 'err');
+          return;
+        }
+        sbc.auth.getSession().then(function(res){
+          sbUser = (res && res.data && res.data.session) ? res.data.session.user : null;
+          updateAuthUI();
+          if(sbUser) sbPullAll();
+        });
+        sbc.auth.onAuthStateChange(function(_e, session){
+          sbUser = session ? session.user : null;
+          updateAuthUI();
+          if(sbUser){ sbPullAll(); showToast('✓ Connecté','ok'); }
+        });
+      }
+
+      if(window._supabaseCreateClient) boot();
+      else window.addEventListener('supabase-sdk-ready', boot, {once:true});
+    }
+
+    async function sbSignIn(){
+      var email = (document.getElementById('sb-email').value || '').trim();
+      if(!email){ showToast('Entre ton email','err'); return; }
+      if(!sbc){ initSupabase(); }
+      if(!sbc){ showToast('Configure URL + anon key','err'); return; }
+      var lbl = document.getElementById('sb-signin-lbl');
+      lbl.textContent = 'Envoi…';
+      try{
+        var r = await sbc.auth.signInWithOtp({
+          email: email,
+          options:{emailRedirectTo: location.origin + location.pathname}
+        });
+        if(r.error) throw r.error;
+        lbl.textContent = '✉️ Vérifie tes mails';
+        showToast('Magic link envoyé à ' + email,'ok', 4000);
+      }catch(e){
+        lbl.textContent = 'Envoyer le magic link';
+        showToast('Sign-in: ' + e.message, 'err');
+      }
+    }
+
+    async function sbSignOut(){
+      if(!sbc) return;
+      try{ await sbc.auth.signOut(); }catch(e){}
+      sbUser = null;
+      updateAuthUI();
+      showToast('Déconnecté');
+    }
+
+    async function sbPullAll(){
+      if(!sbReady()) return;
+      try{
+        var pr = await sbc.from('projects').select('*').order('created_at');
+        if(pr.error) throw pr.error;
+        var cr = await sbc.from('conversations').select('*').order('updated_at', {ascending:false});
+        if(cr.error) throw cr.error;
+
+        var remoteProjs = (pr.data || []).map(function(p){
+          return {id:p.id, name:p.name, color:p.color};
+        });
+
+        if(remoteProjs.length){
+          projs = remoteProjs;
+        } else {
+          for(var i=0;i<projs.length;i++){
+            await sbc.from('projects').upsert({
+              id:projs[i].id, user_id:sbUser.id,
+              name:projs[i].name, color:projs[i].color
+            });
+          }
+        }
+        ls('_p_projs', projs);
+
+        var byProj = {};
+        (cr.data || []).forEach(function(c){
+          if(!byProj[c.project_id]) byProj[c.project_id] = [];
+          byProj[c.project_id].push({
+            id:c.id, title:c.title || 'New question',
+            turns:c.turns || [], at: new Date(c.updated_at).getTime()
+          });
+        });
+        projs.forEach(function(p){
+          var arr = byProj[p.id] || [];
+          if(arr.length) ls('_p_c_' + p.id, arr);
+        });
+
+        if(!projs.some(function(p){ return p.id === pid; })){
+          pid = projs[0] ? projs[0].id : 'p0';
+        }
+        convs = ls('_p_c_' + pid) || [];
+        cid = convs.length ? convs[0].id : null;
+
+        render();
+      }catch(e){
+        showToast('Sync: ' + e.message, 'err');
+      }
+    }
+
+    async function sbSaveProj(p){
+      if(!sbReady()) return;
+      try{
+        await sbc.from('projects').upsert({
+          id:p.id, user_id:sbUser.id, name:p.name, color:p.color
+        });
+      }catch(e){}
+    }
+
+    async function sbDeleteProj(id){
+      if(!sbReady()) return;
+      try{ await sbc.from('projects').delete().eq('id', id); }catch(e){}
+    }
+
+    async function sbSaveConv(c){
+      if(!sbReady()) return;
+      try{
+        await sbc.from('conversations').upsert({
+          id:c.id, user_id:sbUser.id, project_id:pid,
+          title:c.title || 'New question', turns:c.turns || [],
+          updated_at:new Date().toISOString()
+        });
+      }catch(e){}
+    }
+
+    async function sbDeleteConv(id){
+      if(!sbReady()) return;
+      try{ await sbc.from('conversations').delete().eq('id', id); }catch(e){}
+    }
+
+    function shortId(){
+      var s = '';
+      var chars = 'abcdefghijkmnopqrstuvwxyz23456789';
+      for(var i=0;i<10;i++) s += chars.charAt(Math.floor(Math.random()*chars.length));
+      return s;
+    }
+
+    async function shareConv(){
+      var c = cur();
+      if(!c){ showToast('No conversation'); return; }
+      if(!c.turns || !c.turns.length){ showToast('Pose une question d\'abord'); return; }
+      if(!sbc){ initSupabase(); }
+      if(!sbc){ showToast('Configure Supabase pour partager','err'); openOv('ov-settings'); return; }
+      if(!sbUser){ showToast('Connecte-toi pour partager','err'); openOv('ov-settings'); return; }
+
+      var id = shortId();
+      try{
+        var r = await sbc.from('shared_links').insert({
+          id:id, user_id:sbUser.id,
+          title:c.title || 'Shared conversation',
+          turns:c.turns || []
+        }).select();
+        if(r.error) throw r.error;
+        var url = location.origin + location.pathname + '?share=' + id;
+        if(navigator.clipboard && navigator.clipboard.writeText){
+          await navigator.clipboard.writeText(url);
+          showToast('🔗 Lien copié','ok', 3000);
+        } else {
+          prompt('Copie ce lien :', url);
+        }
+      }catch(e){
+        showToast('Share: ' + e.message, 'err');
+      }
+    }
+
+    async function openShared(id){
+      sharedView = true;
+      var url = getKey('sb-url'), anon = getKey('sb-anon');
+      if(!url || !anon){
+        showToast('Ce lien nécessite la config Supabase','err',5000);
+        openOv('ov-settings');
+        return;
+      }
+      if(!sbc && window._supabaseCreateClient){
+        sbc = window._supabaseCreateClient(url, anon);
+      } else if(!sbc){
+        await new Promise(function(res){ window.addEventListener('supabase-sdk-ready', res, {once:true}); });
+        sbc = window._supabaseCreateClient(url, anon);
+      }
+      try{
+        var r = await sbc.from('shared_links').select('*').eq('id', id).single();
+        if(r.error) throw r.error;
+        renderSharedView(r.data);
+      }catch(e){
+        showToast('Lien introuvable: ' + e.message,'err',5000);
+      }
+    }
+
+    function renderSharedView(row){
+      document.getElementById('sb').style.display = 'none';
+      document.querySelector('.inp-area').style.display = 'none';
+      document.getElementById('btn-share').style.display = 'none';
+      document.getElementById('btn-clear').style.display = 'none';
+      document.getElementById('btn-rename').style.display = 'none';
+      document.getElementById('top-title').textContent = row.title || 'Shared conversation';
+      document.getElementById('top-sub').textContent = '🔗 Lecture seule · partagé';
+      var host = document.getElementById('hist');
+      host.innerHTML = '';
+      (row.turns || []).forEach(function(t){
+        var turn = document.createElement('div');
+        turn.className = 'turn';
+        if(t.imgs && t.imgs.length){
+          var ir = document.createElement('div');
+          ir.style.cssText = 'display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end;margin-bottom:4px';
+          t.imgs.forEach(function(src){
+            var im = document.createElement('img');
+            im.src = src;
+            im.style.cssText = 'width:80px;height:80px;border-radius:10px;object-fit:cover';
+            ir.appendChild(im);
+          });
+          turn.appendChild(ir);
+        }
+        var qb = document.createElement('div');
+        qb.className = 'q-bub';
+        qb.textContent = t.q || '[Image]';
+        turn.appendChild(qb);
+        if(t.web){
+          var wp = document.createElement('div');
+          wp.className = 'web-pill';
+          wp.textContent = '🔍 Web search';
+          turn.appendChild(wp);
+        }
+        turn.appendChild(buildResult(t.ais || [], t.rec || ''));
+        host.appendChild(turn);
+      });
     }
 
     document.addEventListener('keydown', function(e){
@@ -1202,7 +1509,17 @@ function bindEvents(){
   document.getElementById('menu-btn').addEventListener('click', toggleSB);
   document.getElementById('sb-ov').addEventListener('click', closeSB);
 
-  document.getElementById('btn-close-settings').addEventListener('click', function(){ saveKeys(); renderBadges(); closeOv('ov-settings'); });
+  document.getElementById('btn-close-settings').addEventListener('click', function(){
+    saveKeys(); renderBadges();
+    if(!sbc) initSupabase();
+    closeOv('ov-settings');
+  });
+  document.getElementById('btn-share').addEventListener('click', shareConv);
+  document.getElementById('sb-signed-out-btn').addEventListener('click', sbSignIn);
+  document.getElementById('sb-signout').addEventListener('click', sbSignOut);
+  document.getElementById('sb-email').addEventListener('keydown', function(e){
+    if(e.key === 'Enter'){ e.preventDefault(); sbSignIn(); }
+  });
   document.getElementById('btn-new-proj').addEventListener('click', function(){ closeOv('ov-settings'); openOv('ov-proj'); resetProj(); });
   document.getElementById('btn-edit-proj').addEventListener('click', function(){ closeOv('ov-settings'); editProj(); });
   document.getElementById('btn-save-proj').addEventListener('click', saveProj);
