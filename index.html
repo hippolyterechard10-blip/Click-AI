@@ -222,20 +222,20 @@ body{
 <body>
 <div id="app">
 
-  <div id="sb-ov" onclick="closeSB()"></div>
+  <div id="sb-ov" data-action="close-sb"></div>
 
   <!-- SIDEBAR -->
 
   <div id="sb">
     <div class="sb-head">
       <div class="sb-logo">✦ AI Panel</div>
-      <button class="sb-gear" onclick="openOv('ov-settings')">⚙</button>
+      <button class="sb-gear" data-action="settings">⚙</button>
     </div>
     <div class="proj-row" id="proj-bar"></div>
     <div class="conv-ul" id="conv-list"></div>
-    <button class="new-q" onclick="newConv()">＋ New question</button>
+    <button class="new-q" data-action="new-conv">＋ New question</button>
     <div class="sb-foot">
-      <button class="keys-btn" onclick="openOv('ov-settings')">🔑 API Keys &amp; Settings</button>
+      <button class="keys-btn" data-action="settings">🔑 API Keys &amp; Settings</button>
     </div>
   </div>
 
@@ -243,15 +243,15 @@ body{
 
   <div id="mn">
     <div class="top-bar">
-      <button id="menu-btn" onclick="toggleSB()">☰</button>
+      <button id="menu-btn" data-action="toggle-sb">☰</button>
       <div class="top-info">
         <div id="top-title">AI Panel</div>
         <div id="top-sub">3 AIs · 1 synthesized answer</div>
       </div>
       <div class="top-right">
         <div id="badges"></div>
-        <button class="top-btn" onclick="clearConv()">🗑</button>
-        <button class="top-btn" onclick="renameConv()">✏️</button>
+        <button class="top-btn" data-action="clear">🗑</button>
+        <button class="top-btn" data-action="rename">✏️</button>
       </div>
     </div>
 
@@ -269,24 +269,24 @@ body{
   <div class="inp-row">
     <div class="inp-side">
       <button class="inp-ico" id="cam-btn" onclick="document.getElementById('img-in').click()">📷</button>
-      <button class="inp-ico" id="mic-btn" onclick="toggleVoice()">🎤</button>
+      <button class="inp-ico" id="mic-btn" data-action="voice">🎤</button>
     </div>
     <div class="inp-box">
       <textarea id="q-in" placeholder="Your question…" rows="1" enterkeyhint="send"
         oninput="autoH(this);updateSend()"
         onkeydown="if(event.key==='Enter'&&!event.shiftKey&&window.innerWidth>640){event.preventDefault();ask();}"></textarea>
     </div>
-    <button id="q-send" onclick="ask()" disabled>↑</button>
+    <button id="q-send" data-action="send" disabled>↑</button>
   </div>
 </div>
-<input type="file" id="img-in" style="display:none" accept="image/*" multiple onchange="onImgs(this.files)">
+<input type="file" id="img-in" style="display:none" accept="image/*" multiple>
 ```
 
   </div>
 
   <!-- SETTINGS -->
 
-  <div class="ov" id="ov-settings" onclick="if(event.target===this)closeOv('ov-settings')">
+  <div class="ov" id="ov-settings" data-ov="ov-settings">
     <div class="sheet">
       <div class="s-handle"></div>
       <div class="s-sec">🤖 AI Models</div>
@@ -303,17 +303,17 @@ body{
       </div>
       <div class="s-sec">📂 Projects</div>
       <div class="s-group">
-        <div class="s-row" style="cursor:pointer" onclick="closeOv('ov-settings');openOv('ov-proj');resetProj()"><span class="s-lbl">New Project</span><span class="s-arr">›</span></div>
-        <div class="s-row" style="cursor:pointer" onclick="closeOv('ov-settings');editProj()"><span class="s-lbl">Edit Current Project</span><span class="s-arr">›</span></div>
+        <div class="s-row" style="cursor:pointer" data-action="new-proj"><span class="s-lbl">New Project</span><span class="s-arr">›</span></div>
+        <div class="s-row" style="cursor:pointer" data-action="edit-proj"><span class="s-lbl">Edit Current Project</span><span class="s-arr">›</span></div>
       </div>
       <div class="s-note">🔒 Keys saved in your browser only.</div>
-      <div class="s-act"><button class="s-btn prim" onclick="closeOv('ov-settings')">Done</button></div>
+      <div class="s-act"><button class="s-btn prim" data-action="close-settings">Done</button></div>
     </div>
   </div>
 
   <!-- PROJECT -->
 
-  <div class="ov" id="ov-proj" onclick="if(event.target===this)closeOv('ov-proj')">
+  <div class="ov" id="ov-proj" data-ov="ov-proj">
     <div class="sheet">
       <div class="s-handle"></div>
       <div class="s-sec" id="proj-sec">New Project</div>
@@ -322,22 +322,22 @@ body{
         <div class="s-row" style="flex-direction:column;align-items:flex-start;gap:8px"><span class="s-lbl">Color</span><div id="color-row" style="display:flex;gap:8px;flex-wrap:wrap;margin-top:4px"></div></div>
       </div>
       <div class="s-act">
-        <button class="s-btn prim" onclick="saveProj()">Save</button>
-        <button class="s-btn red" id="proj-del" style="display:none" onclick="deleteProj()">Delete Project</button>
+        <button class="s-btn prim" data-action="save-proj">Save</button>
+        <button class="s-btn red" id="proj-del" style="display:none" data-action="delete-proj">Delete Project</button>
       </div>
     </div>
   </div>
 
   <!-- RENAME -->
 
-  <div class="ov" id="ov-rename" onclick="if(event.target===this)closeOv('ov-rename')">
+  <div class="ov" id="ov-rename" data-ov="ov-rename">
     <div class="sheet">
       <div class="s-handle"></div>
       <div class="s-sec">Rename</div>
       <div class="s-group">
         <div class="s-row"><input class="s-in" id="rename-in" placeholder="Conversation name…" style="text-align:left;width:100%"/></div>
       </div>
-      <div class="s-act"><button class="s-btn prim" onclick="doRename()">Save</button></div>
+      <div class="s-act"><button class="s-btn prim" data-action="do-rename">Save</button></div>
     </div>
   </div>
 
@@ -730,7 +730,62 @@ function md(t){
 
 }
 
+// ── Attach all event handlers via addEventListener ──
+function setupEvents(){
+function on(sel, handler){
+var els=document.querySelectorAll(sel);
+els.forEach(function(el){
+el.addEventListener(‘click’, handler, false);
+});
+}
+function byAction(action, handler){
+var els=document.querySelectorAll(’[data-action=”’+action+’”]’);
+els.forEach(function(el){
+el.addEventListener(‘click’, function(e){e.stopPropagation();handler(e);}, false);
+});
+}
+
+byAction(‘settings’, function(){openOv(‘ov-settings’);});
+byAction(‘new-conv’, function(){newConv();});
+byAction(‘clear’, function(){clearConv();});
+byAction(‘rename’, function(){renameConv();});
+byAction(‘voice’, function(){toggleVoice();});
+byAction(‘send’, function(){ask();});
+byAction(‘toggle-sb’, function(){toggleSB();});
+byAction(‘close-sb’, function(){closeSB();});
+byAction(‘new-proj’, function(){closeOv(‘ov-settings’);openOv(‘ov-proj’);resetProj();});
+byAction(‘edit-proj’, function(){closeOv(‘ov-settings’);editProj();});
+byAction(‘close-settings’, function(){closeOv(‘ov-settings’);});
+byAction(‘save-proj’, function(){saveProj();});
+byAction(‘delete-proj’, function(){deleteProj();});
+byAction(‘do-rename’, function(){doRename();});
+
+// Overlay click-outside to close
+document.querySelectorAll(’[data-ov]’).forEach(function(el){
+var ovId=el.getAttribute(‘data-ov’);
+el.addEventListener(‘click’, function(e){
+if(e.target===el)closeOv(ovId);
+}, false);
+});
+
+// q-in textarea keydown
+var qin=document.getElementById(‘q-in’);
+if(qin){
+qin.addEventListener(‘keydown’, function(e){
+if(e.key===‘Enter’&&!e.shiftKey&&window.innerWidth>640){
+e.preventDefault();ask();
+}
+});
+qin.addEventListener(‘input’, function(){autoH(this);updateSend();});
+}
+
+// img-in change
+var imin=document.getElementById(‘img-in’);
+if(imin)imin.addEventListener(‘change’,function(){onImgs(this.files);});
+}
+
 init();
+setupEvents();
 </script>
 
 </body>
