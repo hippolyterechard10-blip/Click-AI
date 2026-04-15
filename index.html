@@ -213,7 +213,6 @@
   <div id="app">
     <div id="sb-ov"></div>
 
-```
 <div id="sb">
   <div class="sb-head">
     <div class="sb-logo">✦ AI Panel</div>
@@ -316,7 +315,6 @@
 </div>
 
 <div id="toast"></div>
-```
 
   </div>
 
@@ -1185,9 +1183,7 @@
         .replace(/</g,'&lt;')
         .replace(/>/g,'&gt;')
         .replace(/```([\s\S]*?)```/g,'<pre><code>$1</code></pre>')
-
-```
-    .replace(/`([^`]+)`/g,'<code>$1</code>')
+        .replace(/`([^`]+)`/g,'<code>$1</code>')
     .replace(/\*\*([^*]+)\*\*/g,'<strong>$1</strong>')
     .replace(/\*([^*\n]+)\*/g,'<em>$1</em>')
     .replace(/^#{1,3} (.+)$/gm,'<strong>$1</strong>')
@@ -1250,7 +1246,6 @@ function bindEvents(){
 }
 
 init();
-```
 
   </script>
 </body>
