@@ -7,36 +7,82 @@
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <meta name="apple-mobile-web-app-title" content="AI Panel" />
-  <title>AI Panel</title>
   <link rel="manifest" href="manifest.json">
-  <link rel="apple-touch-icon" href="icon.svg">
+  <title>AI Panel</title>
   <style>
     *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
-    body{font-family:-apple-system,'Helvetica Neue',sans-serif;background:#1A1510;height:100vh;height:100dvh;overflow:hidden;display:flex;}
-    #app{position:relative;display:flex;width:100%;height:100%;overflow:hidden;}
-    #sb{width:260px;min-width:260px;background:#241E14;display:flex;flex-direction:column;height:100%;padding-top:env(safe-area-inset-top,0px);flex-shrink:0;}
+    body{
+      font-family:-apple-system,'Helvetica Neue',sans-serif;
+      background:#1A1510;
+      height:100vh;height:100dvh;
+      overflow:hidden;
+      display:flex;
+    }
+    #app{
+      position:relative;
+      display:flex;
+      width:100%;
+      height:100%;
+      overflow:hidden;
+    }
+    #sb{
+      width:260px;min-width:260px;
+      background:#241E14;
+      display:flex;flex-direction:column;
+      height:100%;
+      padding-top:env(safe-area-inset-top,0px);
+      flex-shrink:0;
+    }
     .sb-head{padding:14px 12px 8px;display:flex;align-items:center;gap:8px}
     .sb-logo{color:#C9A84C;font-size:18px;font-weight:800;flex:1}
-    .sb-gear{width:30px;height:30px;border-radius:8px;border:none;cursor:pointer;background:rgba(255,255,255,.1);color:rgba(255,255,255,.7);font-size:15px;display:flex;align-items:center;justify-content:center;}
+    .sb-gear{
+      width:30px;height:30px;border-radius:8px;border:none;cursor:pointer;
+      background:rgba(255,255,255,.1);color:rgba(255,255,255,.7);font-size:15px;
+      display:flex;align-items:center;justify-content:center;
+    }
     .proj-row{display:flex;overflow-x:auto;padding:4px 12px 8px;gap:6px;flex-shrink:0}
     .proj-row::-webkit-scrollbar{display:none}
-    .proj-btn{flex-shrink:0;padding:5px 12px;border-radius:20px;border:none;cursor:pointer;background:rgba(255,255,255,.1);color:rgba(255,255,255,.65);font-size:11px;font-weight:600;white-space:nowrap;}
+    .proj-btn{
+      flex-shrink:0;padding:5px 12px;border-radius:20px;border:none;cursor:pointer;
+      background:rgba(255,255,255,.1);color:rgba(255,255,255,.65);
+      font-size:11px;font-weight:600;white-space:nowrap;
+    }
     .proj-add{background:transparent;border:1.5px dashed rgba(255,255,255,.2);color:rgba(255,255,255,.4)}
     .conv-ul{flex:1;overflow-y:auto;padding:4px 8px}
     .conv-ul::-webkit-scrollbar{display:none}
-    .conv-li{padding:9px 10px;border-radius:10px;cursor:pointer;margin-bottom:2px;display:flex;align-items:center;gap:6px;}
+    .conv-li{
+      padding:9px 10px;border-radius:10px;cursor:pointer;margin-bottom:2px;
+      display:flex;align-items:center;gap:6px;
+    }
     .conv-li.sel{background:rgba(201,168,76,.14)}
     .conv-name{font-size:12px;font-weight:600;color:rgba(255,255,255,.88);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1}
     .conv-li.sel .conv-name{color:#C9A84C}
     .conv-date{font-size:10px;color:rgba(255,255,255,.4);margin-top:2px}
     .conv-del{background:none;border:none;color:rgba(255,255,255,.3);font-size:13px;cursor:pointer;padding:6px;flex-shrink:0}
     .no-convs{padding:20px 12px;text-align:center;font-size:11px;color:rgba(255,255,255,.35);line-height:1.6}
-    .new-q{margin:6px 8px;padding:11px;border:1.5px dashed rgba(201,168,76,.3);border-radius:11px;background:rgba(201,168,76,.1);color:#C9A84C;font-size:12px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:5px;flex-shrink:0;}
+    .new-q{
+      margin:6px 8px;padding:11px;border:1.5px dashed rgba(201,168,76,.3);
+      border-radius:11px;background:rgba(201,168,76,.1);
+      color:#C9A84C;font-size:12px;font-weight:600;cursor:pointer;
+      display:flex;align-items:center;justify-content:center;gap:5px;flex-shrink:0;
+    }
     .sb-foot{padding:8px;padding-bottom:calc(8px + env(safe-area-inset-bottom,0px));border-top:1px solid rgba(255,255,255,.06);flex-shrink:0}
-    .keys-btn{width:100%;padding:9px 12px;background:none;border:none;cursor:pointer;display:flex;align-items:center;gap:8px;border-radius:9px;color:rgba(255,255,255,.55);font-size:12px;}
+    .keys-btn{
+      width:100%;padding:9px 12px;background:none;border:none;cursor:pointer;
+      display:flex;align-items:center;gap:8px;border-radius:9px;
+      color:rgba(255,255,255,.55);font-size:12px;
+    }
     #mn{flex:1;display:flex;flex-direction:column;background:#F5F0E8;min-width:0;overflow:hidden}
-    .top-bar{background:#FFFEF9;border-bottom:1px solid #D8D0C4;padding:10px 14px;padding-top:calc(10px + env(safe-area-inset-top,0px));display:flex;align-items:center;gap:9px;flex-shrink:0;}
-    #menu-btn{display:none;width:32px;height:32px;border-radius:8px;border:none;background:#F5F0E8;color:#2C2416;font-size:18px;cursor:pointer;align-items:center;justify-content:center;flex-shrink:0;}
+    .top-bar{
+      background:#FFFEF9;border-bottom:1px solid #D8D0C4;
+      padding:10px 14px;padding-top:calc(10px + env(safe-area-inset-top,0px));
+      display:flex;align-items:center;gap:9px;flex-shrink:0;
+    }
+    #menu-btn{
+      display:none;width:32px;height:32px;border-radius:8px;border:none;
+      background:#F5F0E8;color:#2C2416;font-size:18px;cursor:pointer;
+      align-items:center;justify-content:center;flex-shrink:0;
+    }
     .top-info{flex:1;min-width:0}
     #top-title{font-size:15px;font-weight:700;color:#2C2416;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
     #top-sub{font-size:10px;color:#7A6A5A;margin-top:1px}
@@ -48,7 +94,7 @@
     #hist::-webkit-scrollbar{display:none}
     .turn{display:flex;flex-direction:column;gap:8px}
     .q-bub{align-self:flex-end;background:#C9A84C;color:#2C2416;padding:10px 14px;border-radius:16px;border-bottom-right-radius:4px;font-size:14px;font-weight:500;line-height:1.5;max-width:88%;word-break:break-word}
-    .web-badge{align-self:flex-end;background:rgba(74,127,165,.15);color:#4A7FA5;padding:3px 10px;border-radius:20px;font-size:10px;font-weight:600;margin-top:-4px;margin-bottom:2px}
+    .web-pill{align-self:flex-end;background:rgba(74,127,165,.12);color:#4A7FA5;font-size:10px;font-weight:600;padding:3px 10px;border-radius:20px;margin-top:-4px}
     .ld{background:#FFFEF9;border-radius:16px;border-bottom-left-radius:4px;padding:14px 16px;box-shadow:0 2px 12px rgba(0,0,0,.06)}
     .ld-title{font-size:10px;font-weight:700;color:#7A6A5A;text-transform:uppercase;letter-spacing:.8px;margin-bottom:10px}
     .ld-rows{display:flex;flex-direction:column;gap:8px;margin-bottom:12px}
@@ -105,9 +151,23 @@
     #q-in::placeholder{color:#B0A090}
     #q-send{width:38px;height:38px;border-radius:50%;border:none;cursor:pointer;background:#C9A84C;color:#2C2416;font-size:20px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0}
     #q-send:disabled{opacity:.35;cursor:not-allowed}
-    .ov{display:none;position:absolute;inset:0;background:rgba(0,0,0,.5);z-index:100;align-items:flex-end;justify-content:center;}
+    .ov{
+      display:none;
+      position:absolute;inset:0;
+      background:rgba(0,0,0,.5);
+      z-index:100;
+      align-items:flex-end;
+      justify-content:center;
+    }
     .ov.on{display:flex}
-    .sheet{background:#F5F0E8;border-radius:22px 22px 0 0;width:100%;max-width:520px;max-height:88%;overflow-y:auto;padding-bottom:calc(16px + env(safe-area-inset-bottom,0px));}
+    .sheet{
+      background:#F5F0E8;
+      border-radius:22px 22px 0 0;
+      width:100%;max-width:520px;
+      max-height:88%;
+      overflow-y:auto;
+      padding-bottom:calc(16px + env(safe-area-inset-bottom,0px));
+    }
     .sheet::-webkit-scrollbar{display:none}
     .s-handle{width:36px;height:4px;background:#C8C0B8;border-radius:2px;margin:10px auto 14px}
     .s-sec{font-size:10px;font-weight:700;color:#7A6A5A;text-transform:uppercase;letter-spacing:.8px;padding:6px 18px 4px}
@@ -129,7 +189,16 @@
     .cdot.on{border-color:#2C2416;transform:scale(1.15)}
     #sb-ov{display:none;position:absolute;inset:0;background:rgba(0,0,0,.4);z-index:49}
     #sb-ov.on{display:block}
-    #toast{display:none;position:absolute;bottom:calc(80px + env(safe-area-inset-bottom,0px));left:50%;transform:translateX(-50%);background:#2C2416;color:white;padding:9px 18px;border-radius:20px;font-size:13px;font-weight:500;z-index:200;white-space:nowrap;}
+    #toast{
+      display:none;
+      position:absolute;
+      bottom:calc(80px + env(safe-area-inset-bottom,0px));
+      left:50%;transform:translateX(-50%);
+      background:#2C2416;color:white;
+      padding:9px 18px;border-radius:20px;
+      font-size:13px;font-weight:500;
+      z-index:200;white-space:nowrap;
+    }
     #toast.on{display:block}
     #toast.ok{background:#27AE60}
     #toast.err{background:#C0392B}
@@ -143,527 +212,981 @@
 <body>
   <div id="app">
     <div id="sb-ov"></div>
-    <div id="sb">
-      <div class="sb-head">
-        <div class="sb-logo">✦ AI Panel</div>
-        <button class="sb-gear" id="btn-settings" type="button">⚙</button>
-      </div>
-      <div class="proj-row" id="proj-bar"></div>
-      <div class="conv-ul" id="conv-list"></div>
-      <button class="new-q" id="btn-new-conv" type="button">＋ New question</button>
-      <div class="sb-foot">
-        <button class="keys-btn" id="btn-settings-2" type="button">🔑 API Keys &amp; Settings</button>
-      </div>
-    </div>
-    <div id="mn">
-      <div class="top-bar">
-        <button id="menu-btn" type="button">☰</button>
-        <div class="top-info">
-          <div id="top-title">AI Panel</div>
-          <div id="top-sub">3 AIs · 1 synthesized answer</div>
-        </div>
-        <div class="top-right">
-          <div id="badges"></div>
-          <button class="top-btn" id="btn-clear" type="button">🗑</button>
-          <button class="top-btn" id="btn-rename" type="button">✏️</button>
-        </div>
-      </div>
-      <div id="hist">
-        <div id="empty">
-          <div class="ei">✦</div>
-          <h3>Ask anything</h3>
-          <p>Claude, Gemini and GPT-4o answer in parallel. One clean synthesis.</p>
-        </div>
-      </div>
-      <div class="inp-area">
-        <div class="att-row" id="att-row"></div>
-        <div class="inp-row">
-          <div class="inp-side">
-            <button class="inp-ico" id="cam-btn" type="button">📷</button>
-            <button class="inp-ico" id="mic-btn" type="button">🎤</button>
-            <button class="inp-ico" id="web-btn" type="button" title="Web search">🔍</button>
-          </div>
-          <div class="inp-box">
-            <textarea id="q-in" placeholder="Your question…" rows="1" enterkeyhint="send"></textarea>
-          </div>
-          <button id="q-send" type="button" disabled>↑</button>
-        </div>
-      </div>
-      <input type="file" id="img-in" style="display:none" accept="image/*" multiple />
-    </div>
-    <div class="ov" id="ov-settings">
-      <div class="sheet">
-        <div class="s-handle"></div>
-        <div class="s-sec">🤖 AI Models</div>
-        <div class="s-group">
-          <div class="s-row"><span class="s-key" style="color:#C9A84C">Anthropic</span><input class="s-in" id="k-ant" type="password" autocomplete="off" placeholder="sk-ant-…" /></div>
-          <div class="s-row"><span class="s-key" style="color:#4A7FA5">Gemini</span><input class="s-in" id="k-gem" type="password" autocomplete="off" placeholder="AIza…" /></div>
-          <div class="s-row"><span class="s-key" style="color:#27AE60">OpenAI</span><input class="s-in" id="k-oai" type="password" autocomplete="off" placeholder="sk-…" /></div>
-        </div>
-        <div class="s-sec">🔍 Web Search</div>
-        <div class="s-group">
-          <div class="s-row"><span class="s-key" style="color:#4A7FA5">Tavily</span><input class="s-in" id="k-tavily" type="password" autocomplete="off" placeholder="tvly-…" /></div>
-        </div>
-        <div class="s-note">🔒 Keys saved in your browser only. Tavily: free at tavily.com (1000 searches/month).</div>
-        <div class="s-sec">📂 Projects</div>
-        <div class="s-group">
-          <div class="s-row" id="btn-new-proj" style="cursor:pointer"><span class="s-lbl">New Project</span><span class="s-arr">›</span></div>
-          <div class="s-row" id="btn-edit-proj" style="cursor:pointer"><span class="s-lbl">Edit Current Project</span><span class="s-arr">›</span></div>
-        </div>
-        <div class="s-act"><button class="s-btn prim" id="btn-close-settings" type="button">Done</button></div>
-      </div>
-    </div>
-    <div class="ov" id="ov-proj">
-      <div class="sheet">
-        <div class="s-handle"></div>
-        <div class="s-sec" id="proj-sec">New Project</div>
-        <div class="s-group">
-          <div class="s-row"><span class="s-lbl">Name</span><input class="s-in" id="proj-in" placeholder="My Project…" /></div>
-          <div class="s-row" style="flex-direction:column;align-items:flex-start;gap:8px"><span class="s-lbl">Color</span><div id="color-row" style="display:flex;gap:8px;flex-wrap:wrap;margin-top:4px"></div></div>
-        </div>
-        <div class="s-act">
-          <button class="s-btn prim" id="btn-save-proj" type="button">Save</button>
-          <button class="s-btn red" id="proj-del" style="display:none" type="button">Delete Project</button>
-        </div>
-      </div>
-    </div>
-    <div class="ov" id="ov-rename">
-      <div class="sheet">
-        <div class="s-handle"></div>
-        <div class="s-sec">Rename</div>
-        <div class="s-group">
-          <div class="s-row"><input class="s-in" id="rename-in" placeholder="Conversation name…" style="text-align:left;width:100%" /></div>
-        </div>
-        <div class="s-act"><button class="s-btn prim" id="btn-do-rename" type="button">Save</button></div>
-      </div>
-    </div>
-    <div id="toast"></div>
+
+```
+<div id="sb">
+  <div class="sb-head">
+    <div class="sb-logo">✦ AI Panel</div>
+    <button class="sb-gear" id="btn-settings" type="button">⚙</button>
   </div>
+  <div class="proj-row" id="proj-bar"></div>
+  <div class="conv-ul" id="conv-list"></div>
+  <button class="new-q" id="btn-new-conv" type="button">＋ New question</button>
+  <div class="sb-foot">
+    <button class="keys-btn" id="btn-settings-2" type="button">🔑 API Keys &amp; Settings</button>
+  </div>
+</div>
+
+<div id="mn">
+  <div class="top-bar">
+    <button id="menu-btn" type="button">☰</button>
+    <div class="top-info">
+      <div id="top-title">AI Panel</div>
+      <div id="top-sub">3 AIs · 1 synthesized answer</div>
+    </div>
+    <div class="top-right">
+      <div id="badges"></div>
+      <button class="top-btn" id="btn-clear" type="button">🗑</button>
+      <button class="top-btn" id="btn-rename" type="button">✏️</button>
+    </div>
+  </div>
+
+  <div id="hist">
+    <div id="empty">
+      <div class="ei">✦</div>
+      <h3>Ask anything</h3>
+      <p>Claude, Gemini and GPT-4o answer in parallel. One clean synthesis.</p>
+    </div>
+  </div>
+
+  <div class="inp-area">
+    <div class="att-row" id="att-row"></div>
+    <div class="inp-row">
+      <div class="inp-side">
+        <button class="inp-ico" id="cam-btn" type="button">📷</button>
+        <button class="inp-ico" id="mic-btn" type="button">🎤</button>
+        <button class="inp-ico" id="web-btn" type="button">🔍</button>
+      </div>
+      <div class="inp-box">
+        <textarea id="q-in" placeholder="Your question…" rows="1" enterkeyhint="send"></textarea>
+      </div>
+      <button id="q-send" type="button" disabled>↑</button>
+    </div>
+  </div>
+  <input type="file" id="img-in" style="display:none" accept="image/*" multiple />
+</div>
+
+<div class="ov" id="ov-settings">
+  <div class="sheet">
+    <div class="s-handle"></div>
+    <div class="s-sec">🤖 AI Models</div>
+    <div class="s-group">
+      <div class="s-row"><span class="s-key" style="color:#C9A84C">Anthropic</span><input class="s-in" id="k-ant" type="password" autocomplete="off" placeholder="sk-ant-…" /></div>
+      <div class="s-row"><span class="s-key" style="color:#4A7FA5">Gemini</span><input class="s-in" id="k-gem" type="password" autocomplete="off" placeholder="AIza…" /></div>
+      <div class="s-row"><span class="s-key" style="color:#27AE60">OpenAI</span><input class="s-in" id="k-oai" type="password" autocomplete="off" placeholder="sk-…" /></div>
+    </div>
+    <div class="s-sec">🔍 Web Search</div>
+    <div class="s-group">
+      <div class="s-row"><span class="s-key" style="color:#4A7FA5">Tavily</span><input class="s-in" id="k-tavily" type="password" autocomplete="off" placeholder="tvly-…" /></div>
+    </div>
+    <div class="s-note">🔒 Keys saved in your browser only. Tavily gratuit sur tavily.com (1000 recherches/mois).</div>
+    <div class="s-sec">📂 Projects</div>
+    <div class="s-group">
+      <div class="s-row" id="btn-new-proj" style="cursor:pointer"><span class="s-lbl">New Project</span><span class="s-arr">›</span></div>
+      <div class="s-row" id="btn-edit-proj" style="cursor:pointer"><span class="s-lbl">Edit Current Project</span><span class="s-arr">›</span></div>
+    </div>
+    <div class="s-act"><button class="s-btn prim" id="btn-close-settings" type="button">Done</button></div>
+  </div>
+</div>
+
+<div class="ov" id="ov-proj">
+  <div class="sheet">
+    <div class="s-handle"></div>
+    <div class="s-sec" id="proj-sec">New Project</div>
+    <div class="s-group">
+      <div class="s-row"><span class="s-lbl">Name</span><input class="s-in" id="proj-in" placeholder="My Project…" /></div>
+      <div class="s-row" style="flex-direction:column;align-items:flex-start;gap:8px"><span class="s-lbl">Color</span><div id="color-row" style="display:flex;gap:8px;flex-wrap:wrap;margin-top:4px"></div></div>
+    </div>
+    <div class="s-act">
+      <button class="s-btn prim" id="btn-save-proj" type="button">Save</button>
+      <button class="s-btn red" id="proj-del" style="display:none" type="button">Delete Project</button>
+    </div>
+  </div>
+</div>
+
+<div class="ov" id="ov-rename">
+  <div class="sheet">
+    <div class="s-handle"></div>
+    <div class="s-sec">Rename</div>
+    <div class="s-group">
+      <div class="s-row"><input class="s-in" id="rename-in" placeholder="Conversation name…" style="text-align:left;width:100%" /></div>
+    </div>
+    <div class="s-act"><button class="s-btn prim" id="btn-do-rename" type="button">Save</button></div>
+  </div>
+</div>
+
+<div id="toast"></div>
+```
+
+  </div>
+
   <script>
     window.onerror = function(msg, src, line){
       showToast('JS Error L' + line + ': ' + msg, 'err', 5000);
       return false;
     };
+
     window.addEventListener('unhandledrejection', function(e){
       showToast('Error: ' + ((e.reason && e.reason.message) || String(e.reason)), 'err', 5000);
     });
 
-```
-var COLORS = ['#C9A84C','#4A7FA5','#A85C3A','#4A7A5A','#6B5B95','#8B6914','#3A7A7A','#C0392B'];
-var KEYS = ['k-ant','k-gem','k-oai','k-tavily'];
-var TIMEOUT = 25000;
-var busy = false, editPid = null, voiceRec = null, voiceOn = false, webOn = false;
-var imgs = [], projs = [], pid = null, convs = [], cid = null;
+    var COLORS = ['#C9A84C','#4A7FA5','#A85C3A','#4A7A5A','#6B5B95','#8B6914','#3A7A7A','#C0392B'];
+    var KEYS = ['k-ant','k-gem','k-oai','k-tavily'];
+    var TIMEOUT = 25000;
 
-function ls(k, v){
-  try{
-    if(v === undefined) return JSON.parse(localStorage.getItem(k));
-    localStorage.setItem(k, JSON.stringify(v));
-  }catch(e){ return null; }
-}
+    var busy = false, editPid = null, voiceRec = null, voiceOn = false, webOn = false;
+    var imgs = [], projs = [], pid = null, convs = [], cid = null;
 
-function getKey(id){
-  var el = document.getElementById(id);
-  if(el && el.value.trim()) return el.value.trim();
-  return ls('_p_' + id) || '';
-}
-
-function saveKeys(){
-  KEYS.forEach(function(id){
-    var el = document.getElementById(id);
-    if(el) ls('_p_' + id, el.value);
-  });
-}
-
-function loadKeys(){
-  KEYS.forEach(function(id){
-    var el = document.getElementById(id);
-    if(el){ var v = ls('_p_' + id); if(v) el.value = v; }
-  });
-}
-
-function init(){
-  projs = ls('_p_projs') || [];
-  if(!projs.length){ projs = [{id:'p0', name:'General', color:'#C9A84C'}]; ls('_p_projs', projs); }
-  pid = projs[0].id;
-  convs = ls('_p_c_' + pid) || [];
-  cid = convs.length ? convs[0].id : null;
-  render(); loadKeys(); renderBadges(); initVoice(); bindEvents(); updateSend();
-}
-
-function save(){ ls('_p_c_' + pid, convs); }
-function cur(){ return convs.find(function(c){ return c.id === cid; }) || null; }
-function curP(){ return projs.find(function(p){ return p.id === pid; }) || null; }
-function render(){ renderProjs(); renderConvs(); renderHist(); renderHead(); }
-
-function renderProjs(){
-  var bar = document.getElementById('proj-bar');
-  bar.innerHTML = '';
-  projs.forEach(function(p){
-    var btn = document.createElement('button');
-    btn.className = 'proj-btn' + (p.id === pid ? ' on' : '');
-    btn.style.background = p.id === pid ? p.color : 'rgba(255,255,255,.1)';
-    btn.style.color = p.id === pid ? '#2C2416' : 'rgba(255,255,255,.65)';
-    btn.textContent = p.name; btn.type = 'button';
-    btn.onclick = function(){ switchProj(p.id); };
-    bar.appendChild(btn);
-  });
-  var add = document.createElement('button');
-  add.className = 'proj-btn proj-add'; add.type = 'button'; add.textContent = '+';
-  add.onclick = function(){ openOv('ov-proj'); resetProj(); };
-  bar.appendChild(add);
-}
-
-function renderConvs(){
-  var el = document.getElementById('conv-list');
-  el.innerHTML = '';
-  if(!convs.length){ el.innerHTML = '<div class="no-convs">No questions yet.<br>Press + to start.</div>'; return; }
-  convs.forEach(function(c){
-    var item = document.createElement('div');
-    item.className = 'conv-li' + (c.id === cid ? ' sel' : '');
-    var wrap = document.createElement('div'); wrap.style.flex = '1'; wrap.style.minWidth = '0';
-    var nm = document.createElement('div'); nm.className = 'conv-name'; nm.textContent = c.title || 'New question';
-    var dt = document.createElement('div'); dt.className = 'conv-date'; dt.textContent = fmtDate(c.at);
-    wrap.appendChild(nm); wrap.appendChild(dt);
-    var del = document.createElement('button'); del.className = 'conv-del'; del.type = 'button'; del.textContent = '✕';
-    item.appendChild(wrap); item.appendChild(del);
-    item.onclick = function(){ switchConv(c.id); };
-    del.onclick = function(e){ e.stopPropagation(); delConv(c.id); };
-    el.appendChild(item);
-  });
-}
-
-function renderHist(){
-  var box = document.getElementById('hist');
-  var conv = cur();
-  Array.from(box.children).forEach(function(k){ if(k.id !== 'empty') box.removeChild(k); });
-  var emp = document.getElementById('empty');
-  if(!conv || !conv.turns || !conv.turns.length){ emp.style.display = 'flex'; return; }
-  emp.style.display = 'none';
-  conv.turns.forEach(function(t){
-    var turn = document.createElement('div'); turn.className = 'turn';
-    if(t.imgs && t.imgs.length){
-      var ir = document.createElement('div');
-      ir.style.cssText = 'display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end;margin-bottom:4px';
-      t.imgs.forEach(function(src){ var im = document.createElement('img'); im.src = src; im.style.cssText = 'width:80px;height:80px;border-radius:10px;object-fit:cover'; ir.appendChild(im); });
-      turn.appendChild(ir);
+    function ls(k, v){
+      try{
+        if(v === undefined) return JSON.parse(localStorage.getItem(k));
+        localStorage.setItem(k, JSON.stringify(v));
+      }catch(e){
+        return null;
+      }
     }
-    var qb = document.createElement('div'); qb.className = 'q-bub';
-    qb.textContent = t.q || (t.imgs && t.imgs.length ? '[Image]' : '');
-    turn.appendChild(qb);
-    if(t.web){ var wb = document.createElement('div'); wb.className = 'web-badge'; wb.textContent = '🔍 Web search'; turn.appendChild(wb); }
-    turn.appendChild(buildResult(t.ais, t.rec));
-    box.appendChild(turn);
-  });
-  scrollDown();
-}
 
-function renderHead(){
-  var c = cur(), p = curP();
-  document.getElementById('top-title').textContent = c ? (c.title || 'New question') : 'AI Panel';
-  document.getElementById('top-sub').textContent = p ? p.name : '3 AIs · 1 synthesized answer';
-}
+    function getKey(id){
+      var el = document.getElementById(id);
+      if(el && el.value.trim()) return el.value.trim();
+      return ls('_p_' + id) || '';
+    }
 
-function renderBadges(){
-  var div = document.getElementById('badges'); div.innerHTML = '';
-  [{id:'k-ant',l:'Claude'},{id:'k-gem',l:'Gemini'},{id:'k-oai',l:'GPT-4o'}].forEach(function(m){
-    var s = document.createElement('span'); s.className = 'badge' + (getKey(m.id) ? '' : ' off'); s.textContent = m.l; div.appendChild(s);
-  });
-  var tw = getKey('k-tavily');
-  if(tw){ var s2 = document.createElement('span'); s2.className = 'badge'; s2.style.background = 'rgba(74,127,165,.15)'; s2.style.color = '#4A7FA5'; s2.textContent = '🔍'; div.appendChild(s2); }
-}
-
-function switchProj(id){ pid = id; convs = ls('_p_c_' + id) || []; cid = convs.length ? convs[0].id : null; render(); if(window.innerWidth <= 640) closeSB(); }
-function switchConv(id){ cid = id; renderConvs(); renderHist(); renderHead(); if(window.innerWidth <= 640) closeSB(); }
-
-function newConv(){
-  var id = 'c' + Date.now();
-  convs.unshift({id:id, title:'New question', turns:[], at:Date.now()});
-  save(); cid = id; renderConvs(); renderHist(); renderHead();
-  if(window.innerWidth <= 640) closeSB();
-  setTimeout(function(){ var q = document.getElementById('q-in'); if(q) q.focus(); }, 120);
-}
-
-function delConv(id){
-  convs = convs.filter(function(c){ return c.id !== id; });
-  if(cid === id) cid = convs.length ? convs[0].id : null;
-  save(); renderConvs(); renderHist(); renderHead();
-}
-
-function clearConv(){
-  var c = cur(); if(!c) return;
-  if(!confirm('Clear this conversation?')) return;
-  c.turns = []; c.at = Date.now(); save(); renderHist();
-}
-
-function renameConv(){
-  var c = cur(); if(!c) return;
-  document.getElementById('rename-in').value = c.title || '';
-  openOv('ov-rename');
-  setTimeout(function(){ document.getElementById('rename-in').focus(); }, 150);
-}
-
-function doRename(){
-  var v = document.getElementById('rename-in').value.trim();
-  var c = cur(); if(!c || !v) return;
-  c.title = v; save(); renderConvs(); renderHead(); closeOv('ov-rename');
-}
-
-function autoH(el){ el.style.height = 'auto'; el.style.height = Math.min(el.scrollHeight, 110) + 'px'; }
-function updateSend(){ document.getElementById('q-send').disabled = (!document.getElementById('q-in').value.trim() && !imgs.length) || busy; }
-
-function toggleWeb(){
-  var tw = getKey('k-tavily');
-  if(!tw){ openOv('ov-settings'); showToast('Add your Tavily API key first', 'err'); return; }
-  webOn = !webOn;
-  var btn = document.getElementById('web-btn');
-  btn.classList.toggle('web-on', webOn);
-  btn.title = webOn ? 'Web search ON' : 'Web search OFF';
-  showToast(webOn ? '🔍 Web search ON' : 'Web search OFF');
-}
-
-async function searchWeb(query){
-  var key = getKey('k-tavily');
-  if(!key) return null;
-  try{
-    var r = await fetch('https://api.tavily.com/search', {
-      method: 'POST',
-      headers: {'Content-Type':'application/json'},
-      body: JSON.stringify({api_key: key, query: query, search_depth: 'basic', max_results: 5, include_answer: true})
-    });
-    var d = await r.json();
-    if(d.error) return null;
-    var ctx = '';
-    if(d.answer) ctx += 'Quick answer: ' + d.answer + '\n\n';
-    if(d.results && d.results.length){
-      ctx += 'Web sources:\n';
-      d.results.slice(0, 5).forEach(function(res, i){
-        ctx += (i+1) + '. ' + res.title + '\n' + res.content.slice(0, 300) + '\n\n';
+    function saveKeys(){
+      KEYS.forEach(function(id){
+        var el = document.getElementById(id);
+        if(el) ls('_p_' + id, el.value);
       });
     }
-    return ctx || null;
-  }catch(e){ return null; }
-}
 
-function onImgs(files){
-  Array.from(files).forEach(function(f){
-    if(!f.type.startsWith('image/')) return;
-    var r = new FileReader();
-    r.onload = function(e){
-      var full = e.target.result;
-      imgs.push({mime:f.type || 'image/jpeg', b64:full.split(',')[1], src:full});
-      renderAttRow(); updateSend(); showToast('Photo added — tap ↑ to send');
-    };
-    r.readAsDataURL(f);
-  });
-  document.getElementById('img-in').value = '';
-}
+    function loadKeys(){
+      KEYS.forEach(function(id){
+        var el = document.getElementById(id);
+        if(el){
+          var v = ls('_p_' + id);
+          if(v) el.value = v;
+        }
+      });
+    }
 
-function renderAttRow(){
-  var row = document.getElementById('att-row'); row.innerHTML = '';
-  imgs.forEach(function(img, i){
-    var d = document.createElement('div'); d.className = 'att-thumb';
-    var im = document.createElement('img'); im.src = img.src; d.appendChild(im);
-    var rm = document.createElement('div'); rm.className = 'att-rm'; rm.textContent = '✕';
-    rm.onclick = function(){ imgs.splice(i, 1); renderAttRow(); updateSend(); };
-    d.appendChild(rm); row.appendChild(d);
-  });
-}
+    function init(){
+      projs = ls('_p_projs') || [];
+      if(!projs.length){
+        projs = [{id:'p0', name:'General', color:'#C9A84C'}];
+        ls('_p_projs', projs);
+      }
+      pid = projs[0].id;
+      convs = ls('_p_c_' + pid) || [];
+      cid = convs.length ? convs[0].id : null;
 
-function initVoice(){
-  var SR = window.SpeechRecognition || window.webkitSpeechRecognition;
-  if(!SR){ document.getElementById('mic-btn').style.opacity = '.3'; return; }
-  voiceRec = new SR(); voiceRec.lang = 'fr-FR'; voiceRec.interimResults = true;
-  voiceRec.onresult = function(e){
-    var t = ''; for(var i = 0; i < e.results.length; i++) t += e.results[i][0].transcript;
-    var el = document.getElementById('q-in'); el.value = t; autoH(el); updateSend();
-  };
-  voiceRec.onend = function(){ voiceOn = false; var b = document.getElementById('mic-btn'); b.classList.remove('rec-on'); b.textContent = '🎤'; };
-  voiceRec.onerror = function(e){ voiceOn = false; var b = document.getElementById('mic-btn'); b.classList.remove('rec-on'); b.textContent = '🎤'; if(e.error === 'not-allowed') showToast('Allow mic in Safari Settings','err'); };
-}
+      render();
+      loadKeys();
+      renderBadges();
+      initVoice();
+      bindEvents();
+      updateSend();
+    }
 
-function toggleVoice(){
-  if(!voiceRec){ showToast('Voice not supported'); return; }
-  var b = document.getElementById('mic-btn');
-  if(voiceOn){ voiceRec.stop(); voiceOn = false; b.classList.remove('rec-on'); b.textContent = '🎤'; return; }
-  if(navigator.mediaDevices && navigator.mediaDevices.getUserMedia){
-    navigator.mediaDevices.getUserMedia({audio:true}).then(function(s){ s.getTracks().forEach(function(t){ t.stop(); }); voiceRec.start(); voiceOn = true; b.classList.add('rec-on'); b.textContent = '⏹'; }).catch(function(){ showToast('Allow mic in Safari Settings','err'); });
-  } else { voiceRec.start(); voiceOn = true; b.classList.add('rec-on'); b.textContent = '⏹'; }
-}
+    function save(){ ls('_p_c_' + pid, convs); }
+    function cur(){ return convs.find(function(c){ return c.id === cid; }) || null; }
+    function curP(){ return projs.find(function(p){ return p.id === pid; }) || null; }
 
-async function ask(){
-  if(busy) return;
-  var q = document.getElementById('q-in').value.trim();
-  var curImgs = imgs.slice();
-  if(!q && !curImgs.length) return;
-  var antKey = getKey('k-ant');
-  if(!antKey){ openOv('ov-settings'); showToast('Add your Anthropic API key','err'); return; }
-  if(!cid) newConv();
-  var conv = cur(); if(!conv) return;
-  if(!conv.turns || !conv.turns.length) conv.title = (q || '[Image]').slice(0,50);
-  busy = true;
-  imgs = []; document.getElementById('att-row').innerHTML = '';
-  document.getElementById('q-in').value = ''; document.getElementById('q-in').style.height = 'auto';
-  var sb = document.getElementById('q-send'); sb.disabled = true; sb.textContent = '…';
-  document.getElementById('empty').style.display = 'none';
-  var turn = document.createElement('div'); turn.className = 'turn';
-  if(curImgs.length){
-    var ir = document.createElement('div'); ir.style.cssText = 'display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end;margin-bottom:4px';
-    curImgs.forEach(function(img){ var im = document.createElement('img'); im.src = img.src; im.style.cssText = 'width:80px;height:80px;border-radius:10px;object-fit:cover'; ir.appendChild(im); });
-    turn.appendChild(ir);
-  }
-  var qb = document.createElement('div'); qb.className = 'q-bub'; qb.textContent = q || (curImgs.length ? '[Image]' : '');
-  turn.appendChild(qb);
-  var didSearch = false;
-  var webCtx = null;
-  if(webOn && q){
-    var wb = document.createElement('div'); wb.className = 'web-badge'; wb.textContent = '🔍 Searching…';
-    turn.appendChild(wb);
-    document.getElementById('hist').appendChild(turn);
-    scrollDown();
-    webCtx = await searchWeb(q);
-    wb.textContent = webCtx ? '🔍 Web search' : '🔍 No results';
-    didSearch = true;
-  } else {
-    document.getElementById('hist').appendChild(turn);
-  }
-  var loader = mkLoader(); turn.appendChild(loader); scrollDown();
-  var gemKey = getKey('k-gem'), oaiKey = getKey('k-oai');
-  var res = {claude:null, gemini:null, gpt:null};
+    function render(){
+      renderProjs();
+      renderConvs();
+      renderHist();
+      renderHead();
+    }
 
-  var systemCtx = webCtx ? ('Use the following current web search results to answer accurately:\n\n' + webCtx + '\nNow answer the user question based on this information.') : '';
+    function renderProjs(){
+      var bar = document.getElementById('proj-bar');
+      bar.innerHTML = '';
 
-  function dot(id, cls, txt){ var d = document.getElementById('d-' + id); if(d) d.className = 'ld-dot ' + cls; var s = document.getElementById('s-' + id); if(s && txt) s.textContent = txt; }
-  function setSt(t){ var e = document.getElementById('st-synth'); if(e) e.textContent = t; }
-  function wt(p, ms, nm){ return Promise.race([p, new Promise(function(_, r){ setTimeout(function(){ r(new Error(nm + ' timed out')); }, ms); })]); }
+      projs.forEach(function(p){
+        var btn = document.createElement('button');
+        btn.className = 'proj-btn' + (p.id === pid ? ' on' : '');
+        btn.style.background = p.id === pid ? p.color : 'rgba(255,255,255,.1)';
+        btn.style.color = p.id === pid ? '#2C2416' : 'rgba(255,255,255,.65)';
+        btn.textContent = p.name;
+        btn.type = 'button';
+        btn.onclick = function(){ switchProj(p.id); };
+        bar.appendChild(btn);
+      });
 
-  var claudeMsg = claudeMsgs(q, curImgs, systemCtx);
-  var geminiQ = systemCtx ? (systemCtx + '\n\nQuestion: ' + q) : q;
-  var gptContent = systemCtx ? [{type:'text',text:systemCtx + '\n\nQuestion: ' + q}] : null;
+      var add = document.createElement('button');
+      add.className = 'proj-btn proj-add';
+      add.type = 'button';
+      add.textContent = '+';
+      add.onclick = function(){ openOv('ov-proj'); resetProj(); };
+      bar.appendChild(add);
+    }
 
-  await Promise.all([
-    wt(apiClaude(antKey, claudeMsg), TIMEOUT, 'Claude').then(function(r){ res.claude = r; dot('claude','ok','✓'); }).catch(function(e){ dot('claude','er', e.message.slice(0,28)); }),
-    gemKey ? wt(apiGemini(gemKey, geminiQ, curImgs), TIMEOUT, 'Gemini').then(function(r){ res.gemini = r; dot('gemini','ok','✓'); }).catch(function(e){ dot('gemini','er', e.message.slice(0,28)); }) : Promise.resolve(),
-    oaiKey ? wt(apiGPT(oaiKey, q, curImgs, systemCtx), TIMEOUT, 'GPT-4o').then(function(r){ res.gpt = r; dot('gpt','ok','✓'); }).catch(function(e){ dot('gpt','er', e.message.slice(0,28)); }) : Promise.resolve()
-  ]);
+    function renderConvs(){
+      var el = document.getElementById('conv-list');
+      el.innerHTML = '';
 
-  setSt('Synthesizing…');
-  var ais = [{l:'Claude',c:'#C9A84C',t:res.claude},{l:'Gemini',c:'#4A7FA5',t:res.gemini},{l:'GPT-4o',c:'#27AE60',t:res.gpt}].filter(function(a){ return !!a.t; });
-  var rec = '';
-  if(!ais.length){ rec = 'No responses. Check your API keys.'; }
-  else if(ais.length === 1){ rec = ais[0].t; }
-  else {
-    var lines = [systemCtx ? 'Web context was provided to all AIs.\n\nQuestion: ' + (q || '[Image]') : 'Question: ' + (q || '[Image attached]') + (curImgs.length ? ' (image shared)' : ''), ''];
-    ais.forEach(function(a){ lines.push(a.l + ':'); lines.push(a.t); lines.push('---'); });
-    lines.push(''); lines.push('Based on these responses, write one clear recommended answer. Be direct and concise.');
-    try{ rec = await wt(apiClaude(antKey, [{role:'user', content:lines.join('\n')}]), TIMEOUT, 'Synthesis'); setSt('Done ✓'); }
-    catch(e){ rec = 'Synthesis error: ' + e.message; }
-  }
+      if(!convs.length){
+        el.innerHTML = '<div class="no-convs">No questions yet.<br>Press + to start.</div>';
+        return;
+      }
 
-  var wrap = buildResult(ais, rec); turn.replaceChild(wrap, loader); scrollDown();
-  if(!conv.turns) conv.turns = [];
-  conv.turns.push({q:q, imgs:curImgs.map(function(i){ return i.src; }), ais:ais, rec:rec, web:didSearch && !!webCtx});
-  conv.at = Date.now();
-  try{ save(); }catch(e){ showToast('Storage full','err'); }
-  renderConvs(); renderHead();
-  busy = false; sb.textContent = '↑'; updateSend();
-}
+      convs.forEach(function(c){
+        var item = document.createElement('div');
+        item.className = 'conv-li' + (c.id === cid ? ' sel' : '');
 
-function mkLoader(){
-  var d = document.createElement('div'); d.className = 'ld';
-  var h = '<div class="ld-title">Consulting 3 AIs…</div><div class="ld-rows">';
-  [{id:'claude',l:'Claude',k:getKey('k-ant')},{id:'gemini',l:'Gemini',k:getKey('k-gem')},{id:'gpt',l:'GPT-4o',k:getKey('k-oai')}].forEach(function(m){
-    h += '<div class="ld-row"><div class="ld-dot' + (m.k ? ' go' : '') + '" id="d-' + m.id + '"></div><div class="ld-name">' + m.l + '</div><div class="ld-st" id="s-' + m.id + '">' + (m.k ? 'Asking…' : 'No key') + '</div></div>';
-  });
-  h += '</div><div class="ld-synth"><div class="dots"><span></span><span></span><span></span></div><div class="ld-synth-txt" id="st-synth">Waiting…</div></div>';
-  d.innerHTML = h; return d;
-}
+        var wrap = document.createElement('div');
+        wrap.style.flex = '1';
+        wrap.style.minWidth = '0';
 
-function buildResult(ais, rec){
-  var wrap = document.createElement('div');
-  ais.forEach(function(ai){
-    var card = document.createElement('div'); card.className = 'sc';
-    var prev = ai.t.replace(/\n/g,' ').slice(0,100) + (ai.t.length > 100 ? '…' : '');
-    var hdr = document.createElement('div'); hdr.className = 'sc-hdr';
-    hdr.innerHTML = '<div class="sc-dot" style="background:' + ai.c + '"></div><div class="sc-name">' + ai.l + '</div><div class="sc-prev">' + esc(prev) + '</div><div class="sc-tog">▾</div>';
-    var detail = document.createElement('div'); detail.className = 'sc-detail'; detail.innerHTML = md(ai.t);
-    hdr.onclick = function(){ detail.classList.toggle('open'); hdr.querySelector('.sc-tog').classList.toggle('open'); };
-    card.appendChild(hdr); card.appendChild(detail); wrap.appendChild(card);
-  });
-  var rc = document.createElement('div'); rc.className = 'rec';
-  rc.innerHTML = '<div class="rec-hdr"><span style="font-size:16px">✦</span><span class="rec-lbl">Recommended answer</span></div><div class="rec-body">' + md(rec) + '</div>';
-  wrap.appendChild(rc); return wrap;
-}
+        var nm = document.createElement('div');
+        nm.className = 'conv-name';
+        nm.textContent = c.title || 'New question';
 
-function claudeMsgs(q, imgs, systemCtx){
-  var content = [];
-  if(systemCtx) content.push({type:'text', text:systemCtx});
-  if(imgs && imgs.length){ imgs.forEach(function(i){ content.push({type:'image', source:{type:'base64', media_type:i.mime, data:i.b64}}); }); }
-  if(q) content.push({type:'text', text:q});
-  if(!content.length) content.push({type:'text', text:'.'});
-  return [{role:'user', content:content.length === 1 && content[0].type === 'text' ? content[0].text : content}];
-}
+        var dt = document.createElement('div');
+        dt.className = 'conv-date';
+        dt.textContent = fmtDate(c.at);
 
-async function apiClaude(key, msgs){
-  var r = await fetch('https://api.anthropic.com/v1/messages', {method:'POST', headers:{'Content-Type':'application/json','x-api-key':key,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'}, body:JSON.stringify({model:'claude-sonnet-4-20250514', max_tokens:2000, messages:msgs})});
-  var d = await r.json(); if(d.error) throw new Error(d.error.message); return d.content[0].text;
-}
+        wrap.appendChild(nm);
+        wrap.appendChild(dt);
 
-async function apiGemini(key, q, imgs){
-  var parts = [];
-  if(imgs && imgs.length) imgs.forEach(function(i){ parts.push({inlineData:{mimeType:i.mime, data:i.b64}}); });
-  if(q) parts.push({text:q});
-  if(!parts.length) parts = [{text:'.'}];
-  var r = await fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=' + key, {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({contents:[{parts:parts}]})});
-  var d = await r.json(); if(d.error) throw new Error(d.error.message); if(!d.candidates || !d.candidates.length) throw new Error('No response from Gemini'); return d.candidates[0].content.parts[0].text;
-}
+        var del = document.createElement('button');
+        del.className = 'conv-del';
+        del.type = 'button';
+        del.textContent = '✕';
 
-async function apiGPT(key, q, imgs, systemCtx){
-  var content = [];
-  if(systemCtx) content.push({type:'text', text:systemCtx});
-  if(imgs && imgs.length) imgs.forEach(function(i){ content.push({type:'image_url', image_url:{url:'data:' + i.mime + ';base64,' + i.b64}}); });
-  if(q) content.push({type:'text', text:q});
-  if(!content.length) content = [{type:'text', text:'.'}];
-  var r = await fetch('https://api.openai.com/v1/chat/completions', {method:'POST', headers:{'Content-Type':'application/json','Authorization':'Bearer ' + key}, body:JSON.stringify({model:'gpt-4o-mini', max_tokens:2000, messages:[{role:'user', content:content}]})});
-  var d = await r.json(); if(d.error) throw new Error(d.error.message); return d.choices[0].message.content;
-}
+        item.appendChild(wrap);
+        item.appendChild(del);
 
-function resetProj(){ editPid = null; document.getElementById('proj-sec').textContent = 'New Project'; document.getElementById('proj-in').value = ''; document.getElementById('proj-del').style.display = 'none'; renderColors(COLORS[0]); }
-function editProj(){ var p = curP(); if(!p) return; editPid = p.id; document.getElementById('proj-sec').textContent = 'Edit Project'; document.getElementById('proj-in').value = p.name; document.getElementById('proj-del').style.display = p.id !== 'p0' ? 'block' : 'none'; renderColors(p.color); openOv('ov-proj'); }
-function renderColors(sel){ var row = document.getElementById('color-row'); row.innerHTML = ''; COLORS.forEach(function(c){ var d = document.createElement('div'); d.className = 'cdot' + (c === sel ? ' on' : ''); d.style.background = c; d.onclick = function(){ renderColors(c); }; row.appendChild(d); }); }
-function getColor(){ var d = document.querySelector('.cdot.on'); return d ? d.style.background : COLORS[0]; }
+        item.onclick = function(){ switchConv(c.id); };
+        del.onclick = function(e){ e.stopPropagation(); delConv(c.id); };
 
-function saveProj(){
-  var name = document.getElementById('proj-in').value.trim();
-  if(!name){ showToast('Enter a name','err'); return; }
-  var color = getColor();
-  if(editPid){ var p = projs.find(function(x){ return x.id === editPid; }); if(p){ p.name = name; p.color = color; } }
-  else { var id = 'p' + Date.now(); projs.push({id:id, name:name, color:color}); pid = id; convs = []; cid = null; }
-  ls('_p_projs', projs); render(); closeOv('ov-proj');
-}
+        el.appendChild(item);
+      });
+    }
 
-function deleteProj(){
-  if(!editPid || editPid === 'p0'){ showToast('Cannot delete default','err'); return; }
-  if(!confirm('Delete project and all questions?')) return;
-  projs = projs.filter(function(p){ return p.id !== editPid; });
-  ls('_p_projs', projs); try{ localStorage.removeItem('_p_c_' + editPid); }catch(e){}
-  pid = projs[0].id; convs = ls('_p_c_' + pid) || []; cid = convs.length ? convs[0].id : null;
-  render(); closeOv('ov-proj');
-}
+    function renderHist(){
+      var box = document.getElementById('hist');
+      var conv = cur();
+      var kids = Array.from(box.children);
 
-function openOv(id){ document.getElementById(id).classList.add('on'); }
-function closeOv(id){ document.getElementById(id).classList.remove('on'); }
-function toggleSB(){ var s = document.getElementById('sb'); var o = document.getElementById('sb-ov'); var open = s.classList.toggle('open'); o.classList.toggle('on', open); }
-function closeSB(){ document.getElementById('sb').classList.remove('open'); document.getElementById('sb-ov').classList.remove('on'); }
-function scrollDown(){ var h = document.getElementById('hist'); setTimeout(function(){ h.scrollTop = h.scrollHeight; }, 40); }
-function fmtDate(ts){ if(!ts) return ''; var d = new Date(ts), n = new Date(), diff = n - d; if(diff < 86400000) return 'Today'; if(diff < 172800000) return 'Yesterday'; return d.toLocaleDateString('fr-FR', {day:'numeric', month:'short'}); }
-function esc(s){ return String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
-function showToast(msg, type, dur){ var t = document.getElementById('toast'); t.textContent = msg; t.className = 'on' + (type ? ' ' + type : ''); clearTimeout(t._t); t._t = setTimeout(function(){ t.className = ''; }, dur || 2400); }
+      kids.forEach(function(k){
+        if(k.id !== 'empty') box.removeChild(k);
+      });
 
-function md(t){
-  return String(t || '')
-    .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
-    .replace(/```([\s\S]*?)```/g,'<pre><code>$1</code></pre>')
+      var emp = document.getElementById('empty');
+      if(!conv || !conv.turns || !conv.turns.length){
+        emp.style.display = 'flex';
+        return;
+      }
+
+      emp.style.display = 'none';
+
+      conv.turns.forEach(function(t){
+        var turn = document.createElement('div');
+        turn.className = 'turn';
+
+        if(t.imgs && t.imgs.length){
+          var ir = document.createElement('div');
+          ir.style.cssText = 'display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end;margin-bottom:4px';
+          t.imgs.forEach(function(src){
+            var im = document.createElement('img');
+            im.src = src;
+            im.style.cssText = 'width:80px;height:80px;border-radius:10px;object-fit:cover';
+            ir.appendChild(im);
+          });
+          turn.appendChild(ir);
+        }
+
+        var qb = document.createElement('div');
+        qb.className = 'q-bub';
+        qb.textContent = t.q || (t.imgs && t.imgs.length ? '[Image]' : '');
+        turn.appendChild(qb);
+
+        if(t.web){
+          var wp = document.createElement('div');
+          wp.className = 'web-pill';
+          wp.textContent = '🔍 Web search';
+          turn.appendChild(wp);
+        }
+
+        turn.appendChild(buildResult(t.ais, t.rec));
+        box.appendChild(turn);
+      });
+
+      scrollDown();
+    }
+
+    function renderHead(){
+      var c = cur(), p = curP();
+      document.getElementById('top-title').textContent = c ? (c.title || 'New question') : 'AI Panel';
+      document.getElementById('top-sub').textContent = p ? p.name : '3 AIs · 1 synthesized answer';
+    }
+
+    function renderBadges(){
+      var div = document.getElementById('badges');
+      div.innerHTML = '';
+
+      [{id:'k-ant',l:'Claude'},{id:'k-gem',l:'Gemini'},{id:'k-oai',l:'GPT-4o'}].forEach(function(m){
+        var s = document.createElement('span');
+        s.className = 'badge' + (getKey(m.id) ? '' : ' off');
+        s.textContent = m.l;
+        div.appendChild(s);
+      });
+    }
+
+    function switchProj(id){
+      pid = id;
+      convs = ls('_p_c_' + id) || [];
+      cid = convs.length ? convs[0].id : null;
+      render();
+      if(window.innerWidth <= 640) closeSB();
+    }
+
+    function switchConv(id){
+      cid = id;
+      renderConvs();
+      renderHist();
+      renderHead();
+      if(window.innerWidth <= 640) closeSB();
+    }
+
+    function newConv(){
+      var id = 'c' + Date.now();
+      convs.unshift({id:id, title:'New question', turns:[], at:Date.now()});
+      save();
+      cid = id;
+      renderConvs();
+      renderHist();
+      renderHead();
+      if(window.innerWidth <= 640) closeSB();
+      setTimeout(function(){
+        var q = document.getElementById('q-in');
+        if(q) q.focus();
+      }, 120);
+    }
+
+    function delConv(id){
+      convs = convs.filter(function(c){ return c.id !== id; });
+      if(cid === id) cid = convs.length ? convs[0].id : null;
+      save();
+      renderConvs();
+      renderHist();
+      renderHead();
+    }
+
+    function clearConv(){
+      var c = cur();
+      if(!c) return;
+      if(!confirm('Clear this conversation?')) return;
+      c.turns = [];
+      c.at = Date.now();
+      save();
+      renderHist();
+    }
+
+    function renameConv(){
+      var c = cur();
+      if(!c) return;
+      document.getElementById('rename-in').value = c.title || '';
+      openOv('ov-rename');
+      setTimeout(function(){
+        document.getElementById('rename-in').focus();
+      }, 150);
+    }
+
+    function doRename(){
+      var v = document.getElementById('rename-in').value.trim();
+      var c = cur();
+      if(!c || !v) return;
+      c.title = v;
+      save();
+      renderConvs();
+      renderHead();
+      closeOv('ov-rename');
+    }
+
+    function autoH(el){
+      el.style.height = 'auto';
+      el.style.height = Math.min(el.scrollHeight, 110) + 'px';
+    }
+
+    function updateSend(){
+      document.getElementById('q-send').disabled = (!document.getElementById('q-in').value.trim() && !imgs.length) || busy;
+    }
+
+    function toggleWeb(){
+      var key = getKey('k-tavily');
+      if(!key){ openOv('ov-settings'); showToast('Add your Tavily key first', 'err'); return; }
+      webOn = !webOn;
+      var btn = document.getElementById('web-btn');
+      btn.classList.toggle('web-on', webOn);
+      showToast(webOn ? '🔍 Web search ON' : 'Web search OFF');
+    }
+
+    async function searchWeb(query){
+      var key = getKey('k-tavily');
+      if(!key) return null;
+      try{
+        var r = await fetch('https://api.tavily.com/search', {
+          method: 'POST',
+          headers: {'Content-Type':'application/json'},
+          body: JSON.stringify({api_key:key, query:query, search_depth:'basic', max_results:5, include_answer:true})
+        });
+        var d = await r.json();
+        if(!d.results) return null;
+        var ctx = '';
+        if(d.answer) ctx += 'Quick answer: ' + d.answer + '\n\n';
+        ctx += 'Web sources:\n';
+        d.results.slice(0,5).forEach(function(res, i){
+          ctx += (i+1) + '. ' + res.title + '\n' + (res.content||'').slice(0,300) + '\n\n';
+        });
+        return ctx;
+      }catch(e){ return null; }
+    }
+
+    function onImgs(files){
+      Array.from(files).forEach(function(f){
+        if(!f.type.startsWith('image/')) return;
+        var r = new FileReader();
+        r.onload = function(e){
+          var full = e.target.result;
+          imgs.push({mime:f.type || 'image/jpeg', b64:full.split(',')[1], src:full});
+          renderAttRow();
+          updateSend();
+          showToast('Photo added — tap ↑ to send');
+        };
+        r.readAsDataURL(f);
+      });
+      document.getElementById('img-in').value = '';
+    }
+
+    function renderAttRow(){
+      var row = document.getElementById('att-row');
+      row.innerHTML = '';
+      imgs.forEach(function(img, i){
+        var d = document.createElement('div');
+        d.className = 'att-thumb';
+
+        var im = document.createElement('img');
+        im.src = img.src;
+        d.appendChild(im);
+
+        var rm = document.createElement('div');
+        rm.className = 'att-rm';
+        rm.textContent = '✕';
+        rm.onclick = function(){
+          imgs.splice(i, 1);
+          renderAttRow();
+          updateSend();
+        };
+
+        d.appendChild(rm);
+        row.appendChild(d);
+      });
+    }
+
+    function initVoice(){
+      var SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+      if(!SR){
+        document.getElementById('mic-btn').style.opacity = '.3';
+        return;
+      }
+      voiceRec = new SR();
+      voiceRec.lang = 'fr-FR';
+      voiceRec.interimResults = true;
+
+      voiceRec.onresult = function(e){
+        var t = '';
+        for(var i = 0; i < e.results.length; i++) t += e.results[i][0].transcript;
+        var el = document.getElementById('q-in');
+        el.value = t;
+        autoH(el);
+        updateSend();
+      };
+
+      voiceRec.onend = function(){
+        voiceOn = false;
+        var b = document.getElementById('mic-btn');
+        b.classList.remove('rec-on');
+        b.textContent = '🎤';
+      };
+
+      voiceRec.onerror = function(e){
+        voiceOn = false;
+        var b = document.getElementById('mic-btn');
+        b.classList.remove('rec-on');
+        b.textContent = '🎤';
+        if(e.error === 'not-allowed') showToast('Allow mic in Safari Settings','err');
+      };
+    }
+
+    function toggleVoice(){
+      if(!voiceRec){ showToast('Voice not supported'); return; }
+      var b = document.getElementById('mic-btn');
+
+      if(voiceOn){
+        voiceRec.stop();
+        voiceOn = false;
+        b.classList.remove('rec-on');
+        b.textContent = '🎤';
+        return;
+      }
+
+      if(navigator.mediaDevices && navigator.mediaDevices.getUserMedia){
+        navigator.mediaDevices.getUserMedia({audio:true}).then(function(s){
+          s.getTracks().forEach(function(t){ t.stop(); });
+          voiceRec.start();
+          voiceOn = true;
+          b.classList.add('rec-on');
+          b.textContent = '⏹';
+        }).catch(function(){
+          showToast('Allow mic in Safari Settings','err');
+        });
+      } else {
+        voiceRec.start();
+        voiceOn = true;
+        b.classList.add('rec-on');
+        b.textContent = '⏹';
+      }
+    }
+
+    async function ask(){
+      if(busy) return;
+
+      var q = document.getElementById('q-in').value.trim();
+      var curImgs = imgs.slice();
+      if(!q && !curImgs.length) return;
+
+      var antKey = getKey('k-ant');
+      if(!antKey){
+        openOv('ov-settings');
+        showToast('Add your Anthropic API key','err');
+        return;
+      }
+
+      if(!cid) newConv();
+      var conv = cur();
+      if(!conv) return;
+
+      if(!conv.turns || !conv.turns.length) conv.title = (q || '[Image]').slice(0,50);
+
+      busy = true;
+      imgs = [];
+      document.getElementById('att-row').innerHTML = '';
+      document.getElementById('q-in').value = '';
+      document.getElementById('q-in').style.height = 'auto';
+
+      var sb = document.getElementById('q-send');
+      sb.disabled = true;
+      sb.textContent = '…';
+      document.getElementById('empty').style.display = 'none';
+
+      var turn = document.createElement('div');
+      turn.className = 'turn';
+
+      if(curImgs.length){
+        var ir = document.createElement('div');
+        ir.style.cssText = 'display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end;margin-bottom:4px';
+        curImgs.forEach(function(img){
+          var im = document.createElement('img');
+          im.src = img.src;
+          im.style.cssText = 'width:80px;height:80px;border-radius:10px;object-fit:cover';
+          ir.appendChild(im);
+        });
+        turn.appendChild(ir);
+      }
+
+      var qb = document.createElement('div');
+      qb.className = 'q-bub';
+      qb.textContent = q || (curImgs.length ? '[Image]' : '');
+      turn.appendChild(qb);
+
+      var webCtx = null;
+      var didSearch = false;
+
+      if(webOn && q){
+        var wp = document.createElement('div');
+        wp.className = 'web-pill';
+        wp.textContent = '🔍 Searching…';
+        turn.appendChild(wp);
+        document.getElementById('hist').appendChild(turn);
+        scrollDown();
+        webCtx = await searchWeb(q);
+        wp.textContent = webCtx ? '🔍 Web search' : '🔍 No results';
+        didSearch = true;
+      } else {
+        document.getElementById('hist').appendChild(turn);
+      }
+
+      var loader = mkLoader();
+      turn.appendChild(loader);
+      scrollDown();
+
+      var gemKey = getKey('k-gem'), oaiKey = getKey('k-oai');
+      var res = {claude:null, gemini:null, gpt:null};
+
+      var webPrefix = webCtx ? ('Here are current web search results for context:\n\n' + webCtx + '\n\nNow answer this question using the above information:\n') : '';
+
+      function dot(id, cls, txt){
+        var d = document.getElementById('d-' + id);
+        if(d) d.className = 'ld-dot ' + cls;
+        var s = document.getElementById('s-' + id);
+        if(s && txt) s.textContent = txt;
+      }
+
+      function setSt(t){
+        var e = document.getElementById('st-synth');
+        if(e) e.textContent = t;
+      }
+
+      function wt(p, ms, nm){
+        return Promise.race([
+          p,
+          new Promise(function(_, r){
+            setTimeout(function(){ r(new Error(nm + ' timed out')); }, ms);
+          })
+        ]);
+      }
+
+      var claudeQ = webPrefix ? webPrefix + (q || '.') : null;
+
+      await Promise.all([
+        wt(apiClaude(antKey, claudeMsgs(claudeQ || q, curImgs)), TIMEOUT, 'Claude')
+          .then(function(r){ res.claude = r; dot('claude','ok','✓'); })
+          .catch(function(e){ dot('claude','er', e.message.slice(0,28)); }),
+        gemKey ? wt(apiGemini(gemKey, webPrefix ? webPrefix + (q||'.') : q, curImgs), TIMEOUT, 'Gemini')
+          .then(function(r){ res.gemini = r; dot('gemini','ok','✓'); })
+          .catch(function(e){ dot('gemini','er', e.message.slice(0,28)); }) : Promise.resolve(),
+        oaiKey ? wt(apiGPT(oaiKey, webPrefix ? webPrefix + (q||'.') : q, curImgs), TIMEOUT, 'GPT-4o')
+          .then(function(r){ res.gpt = r; dot('gpt','ok','✓'); })
+          .catch(function(e){ dot('gpt','er', e.message.slice(0,28)); }) : Promise.resolve()
+      ]);
+
+      setSt('Synthesizing…');
+
+      var ais = [
+        {l:'Claude', c:'#C9A84C', t:res.claude},
+        {l:'Gemini', c:'#4A7FA5', t:res.gemini},
+        {l:'GPT-4o', c:'#27AE60', t:res.gpt}
+      ].filter(function(a){ return !!a.t; });
+
+      var rec = '';
+      if(!ais.length){
+        rec = 'No responses. Check your API keys.';
+      } else if(ais.length === 1){
+        rec = ais[0].t;
+      } else {
+        var lines = ['Question: ' + (q || '[Image attached]') + (curImgs.length ? ' (image shared)' : ''), ''];
+        ais.forEach(function(a){
+          lines.push(a.l + ':');
+          lines.push(a.t);
+          lines.push('---');
+        });
+        lines.push('');
+        lines.push('Based on these responses, write one clear recommended answer. Be direct and concise.');
+
+        try{
+          rec = await wt(apiClaude(antKey, [{role:'user', content:lines.join('\n')}]), TIMEOUT, 'Synthesis');
+          setSt('Done ✓');
+        }catch(e){
+          rec = 'Synthesis error: ' + e.message;
+        }
+      }
+
+      var wrap = buildResult(ais, rec);
+      turn.replaceChild(wrap, loader);
+      scrollDown();
+
+      if(!conv.turns) conv.turns = [];
+      conv.turns.push({
+        q:q,
+        imgs:curImgs.map(function(i){ return i.src; }),
+        ais:ais,
+        rec:rec,
+        web: didSearch && !!webCtx
+      });
+      conv.at = Date.now();
+
+      try{
+        save();
+      }catch(e){
+        showToast('Storage full — images not saved','err');
+      }
+
+      renderConvs();
+      renderHead();
+      busy = false;
+      sb.textContent = '↑';
+      updateSend();
+    }
+
+    function mkLoader(){
+      var d = document.createElement('div');
+      d.className = 'ld';
+
+      var h = '<div class="ld-title">Consulting 3 AIs…</div><div class="ld-rows">';
+      [{id:'claude',l:'Claude',k:getKey('k-ant')},{id:'gemini',l:'Gemini',k:getKey('k-gem')},{id:'gpt',l:'GPT-4o',k:getKey('k-oai')}].forEach(function(m){
+        h += '<div class="ld-row"><div class="ld-dot' + (m.k ? ' go' : '') + '" id="d-' + m.id + '"></div>'
+          + '<div class="ld-name">' + m.l + '</div>'
+          + '<div class="ld-st" id="s-' + m.id + '">' + (m.k ? 'Asking…' : 'No key') + '</div></div>';
+      });
+
+      h += '</div><div class="ld-synth"><div class="dots"><span></span><span></span><span></span></div><div class="ld-synth-txt" id="st-synth">Waiting…</div></div>';
+      d.innerHTML = h;
+      return d;
+    }
+
+    function buildResult(ais, rec){
+      var wrap = document.createElement('div');
+
+      ais.forEach(function(ai){
+        var card = document.createElement('div');
+        card.className = 'sc';
+
+        var prev = ai.t.replace(/\n/g,' ').slice(0,100) + (ai.t.length > 100 ? '…' : '');
+
+        var hdr = document.createElement('div');
+        hdr.className = 'sc-hdr';
+        hdr.innerHTML =
+          '<div class="sc-dot" style="background:' + ai.c + '"></div>' +
+          '<div class="sc-name">' + ai.l + '</div>' +
+          '<div class="sc-prev">' + esc(prev) + '</div>' +
+          '<div class="sc-tog">▾</div>';
+
+        var detail = document.createElement('div');
+        detail.className = 'sc-detail';
+        detail.innerHTML = md(ai.t);
+
+        hdr.onclick = function(){
+          detail.classList.toggle('open');
+          hdr.querySelector('.sc-tog').classList.toggle('open');
+        };
+
+        card.appendChild(hdr);
+        card.appendChild(detail);
+        wrap.appendChild(card);
+      });
+
+      var rc = document.createElement('div');
+      rc.className = 'rec';
+      rc.innerHTML =
+        '<div class="rec-hdr"><span style="font-size:16px">✦</span><span class="rec-lbl">Recommended answer</span></div>' +
+        '<div class="rec-body">' + md(rec) + '</div>';
+
+      wrap.appendChild(rc);
+      return wrap;
+    }
+
+    function claudeMsgs(q, imgs){
+      if(!imgs || !imgs.length) return [{role:'user', content:q || '.'}];
+      var parts = imgs.map(function(i){
+        return {type:'image', source:{type:'base64', media_type:i.mime, data:i.b64}};
+      });
+      if(q) parts.push({type:'text', text:q});
+      return [{role:'user', content:parts}];
+    }
+
+    async function apiClaude(key, msgs){
+      var r = await fetch('https://api.anthropic.com/v1/messages', {
+        method:'POST',
+        headers:{
+          'Content-Type':'application/json',
+          'x-api-key':key,
+          'anthropic-version':'2023-06-01',
+          'anthropic-dangerous-direct-browser-access':'true'
+        },
+        body:JSON.stringify({
+          model:'claude-sonnet-4-20250514',
+          max_tokens:2000,
+          messages:msgs
+        })
+      });
+      var d = await r.json();
+      if(d.error) throw new Error(d.error.message);
+      return d.content[0].text;
+    }
+
+    async function apiGemini(key, q, imgs){
+      var parts = [];
+      if(imgs && imgs.length){
+        imgs.forEach(function(i){
+          parts.push({inlineData:{mimeType:i.mime, data:i.b64}});
+        });
+      }
+      if(q) parts.push({text:q});
+      if(!parts.length) parts = [{text:'.'}];
+
+      var r = await fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=' + key, {
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({contents:[{parts:parts}]})
+      });
+
+      var d = await r.json();
+      if(d.error) throw new Error(d.error.message);
+      if(!d.candidates || !d.candidates.length) throw new Error('No response from Gemini');
+      return d.candidates[0].content.parts[0].text;
+    }
+
+    async function apiGPT(key, q, imgs){
+      var content = [];
+      if(imgs && imgs.length){
+        imgs.forEach(function(i){
+          content.push({type:'image_url', image_url:{url:'data:' + i.mime + ';base64,' + i.b64}});
+        });
+      }
+      if(q) content.push({type:'text', text:q});
+      if(!content.length) content = [{type:'text', text:'.'}];
+
+      var r = await fetch('https://api.openai.com/v1/chat/completions', {
+        method:'POST',
+        headers:{
+          'Content-Type':'application/json',
+          'Authorization':'Bearer ' + key
+        },
+        body:JSON.stringify({
+          model:'gpt-4o-mini',
+          max_tokens:2000,
+          messages:[{role:'user', content:content}]
+        })
+      });
+
+      var d = await r.json();
+      if(d.error) throw new Error(d.error.message);
+      return d.choices[0].message.content;
+    }
+
+    function resetProj(){
+      editPid = null;
+      document.getElementById('proj-sec').textContent = 'New Project';
+      document.getElementById('proj-in').value = '';
+      document.getElementById('proj-del').style.display = 'none';
+      renderColors(COLORS[0]);
+    }
+
+    function editProj(){
+      var p = curP();
+      if(!p) return;
+      editPid = p.id;
+      document.getElementById('proj-sec').textContent = 'Edit Project';
+      document.getElementById('proj-in').value = p.name;
+      document.getElementById('proj-del').style.display = p.id !== 'p0' ? 'block' : 'none';
+      renderColors(p.color);
+      openOv('ov-proj');
+    }
+
+    function renderColors(sel){
+      var row = document.getElementById('color-row');
+      row.innerHTML = '';
+      COLORS.forEach(function(c){
+        var d = document.createElement('div');
+        d.className = 'cdot' + (c === sel ? ' on' : '');
+        d.style.background = c;
+        d.onclick = function(){ renderColors(c); };
+        row.appendChild(d);
+      });
+    }
+
+    function getColor(){
+      var d = document.querySelector('.cdot.on');
+      return d ? d.style.background : COLORS[0];
+    }
+
+    function saveProj(){
+      var name = document.getElementById('proj-in').value.trim();
+      if(!name){ showToast('Enter a name','err'); return; }
+
+      var color = getColor();
+      if(editPid){
+        var p = projs.find(function(x){ return x.id === editPid; });
+        if(p){ p.name = name; p.color = color; }
+      } else {
+        var id = 'p' + Date.now();
+        projs.push({id:id, name:name, color:color});
+        pid = id;
+        convs = [];
+        cid = null;
+      }
+
+      ls('_p_projs', projs);
+      render();
+      closeOv('ov-proj');
+    }
+
+    function deleteProj(){
+      if(!editPid || editPid === 'p0'){
+        showToast('Cannot delete default','err');
+        return;
+      }
+      if(!confirm('Delete project and all questions?')) return;
+
+      projs = projs.filter(function(p){ return p.id !== editPid; });
+      ls('_p_projs', projs);
+      try{ localStorage.removeItem('_p_c_' + editPid); }catch(e){}
+
+      pid = projs[0].id;
+      convs = ls('_p_c_' + pid) || [];
+      cid = convs.length ? convs[0].id : null;
+      render();
+      closeOv('ov-proj');
+    }
+
+    function openOv(id){ document.getElementById(id).classList.add('on'); }
+    function closeOv(id){ document.getElementById(id).classList.remove('on'); }
+
+    function toggleSB(){
+      var s = document.getElementById('sb');
+      var o = document.getElementById('sb-ov');
+      var open = s.classList.toggle('open');
+      o.classList.toggle('on', open);
+    }
+
+    function closeSB(){
+      document.getElementById('sb').classList.remove('open');
+      document.getElementById('sb-ov').classList.remove('on');
+    }
+
+    document.addEventListener('keydown', function(e){
+      if(e.key === 'Escape'){
+        document.querySelectorAll('.ov.on').forEach(function(o){
+          o.classList.remove('on');
+        });
+      }
+    });
+
+    function scrollDown(){
+      var h = document.getElementById('hist');
+      setTimeout(function(){ h.scrollTop = h.scrollHeight; }, 40);
+    }
+
+    function fmtDate(ts){
+      if(!ts) return '';
+      var d = new Date(ts), n = new Date(), diff = n - d;
+      if(diff < 86400000) return 'Today';
+      if(diff < 172800000) return 'Yesterday';
+      return d.toLocaleDateString('fr-FR', {day:'numeric', month:'short'});
+    }
+
+    function esc(s){
+      return String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+    }
+
+    function showToast(msg, type, dur){
+      var t = document.getElementById('toast');
+      t.textContent = msg;
+      t.className = 'on' + (type ? ' ' + type : '');
+      clearTimeout(t._t);
+      t._t = setTimeout(function(){ t.className = ''; }, dur || 2400);
+    }
+
+    function md(t){
+      return String(t || '')
+        .replace(/&/g,'&amp;')
+        .replace(/</g,'&lt;')
+        .replace(/>/g,'&gt;')
+        .replace(/```([\s\S]*?)```/g,'<pre><code>$1</code></pre>')
+
+```
     .replace(/`([^`]+)`/g,'<code>$1</code>')
     .replace(/\*\*([^*]+)\*\*/g,'<strong>$1</strong>')
     .replace(/\*([^*\n]+)\*/g,'<em>$1</em>')
@@ -682,22 +1205,48 @@ function bindEvents(){
   document.getElementById('btn-rename').addEventListener('click', renameConv);
   document.getElementById('menu-btn').addEventListener('click', toggleSB);
   document.getElementById('sb-ov').addEventListener('click', closeSB);
+
   document.getElementById('btn-close-settings').addEventListener('click', function(){ saveKeys(); renderBadges(); closeOv('ov-settings'); });
   document.getElementById('btn-new-proj').addEventListener('click', function(){ closeOv('ov-settings'); openOv('ov-proj'); resetProj(); });
   document.getElementById('btn-edit-proj').addEventListener('click', function(){ closeOv('ov-settings'); editProj(); });
   document.getElementById('btn-save-proj').addEventListener('click', saveProj);
   document.getElementById('proj-del').addEventListener('click', deleteProj);
   document.getElementById('btn-do-rename').addEventListener('click', doRename);
-  document.getElementById('cam-btn').addEventListener('click', function(){ document.getElementById('img-in').click(); });
-  document.getElementById('img-in').addEventListener('change', function(){ onImgs(this.files); });
+
+  document.getElementById('cam-btn').addEventListener('click', function(){
+    document.getElementById('img-in').click();
+  });
+  document.getElementById('img-in').addEventListener('change', function(){
+    onImgs(this.files);
+  });
+
   document.getElementById('mic-btn').addEventListener('click', toggleVoice);
   document.getElementById('web-btn').addEventListener('click', toggleWeb);
   document.getElementById('q-send').addEventListener('click', ask);
-  document.getElementById('q-in').addEventListener('input', function(){ autoH(this); updateSend(); });
-  document.getElementById('q-in').addEventListener('keydown', function(event){ if(event.key === 'Enter' && !event.shiftKey && window.innerWidth > 640){ event.preventDefault(); ask(); } });
-  KEYS.forEach(function(id){ var el = document.getElementById(id); if(el) el.addEventListener('input', function(){ saveKeys(); renderBadges(); }); });
-  ['ov-settings','ov-proj','ov-rename'].forEach(function(id){ var el = document.getElementById(id); el.addEventListener('click', function(e){ if(e.target === el) closeOv(id); }); });
-  document.addEventListener('keydown', function(e){ if(e.key === 'Escape') document.querySelectorAll('.ov.on').forEach(function(o){ o.classList.remove('on'); }); });
+
+  document.getElementById('q-in').addEventListener('input', function(){
+    autoH(this);
+    updateSend();
+  });
+
+  document.getElementById('q-in').addEventListener('keydown', function(event){
+    if(event.key === 'Enter' && !event.shiftKey && window.innerWidth > 640){
+      event.preventDefault();
+      ask();
+    }
+  });
+
+  KEYS.forEach(function(id){
+    var el = document.getElementById(id);
+    if(el) el.addEventListener('input', function(){ saveKeys(); renderBadges(); });
+  });
+
+  ['ov-settings','ov-proj','ov-rename'].forEach(function(id){
+    var el = document.getElementById(id);
+    el.addEventListener('click', function(e){
+      if(e.target === el) closeOv(id);
+    });
+  });
 }
 
 init();
