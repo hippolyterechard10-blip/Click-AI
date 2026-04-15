@@ -19,7 +19,6 @@ body{
 }
 /* App container - everything inside here */
 #app{
-  position:relative;
   display:flex;
   width:100%;
   height:100%;
@@ -160,9 +159,10 @@ body{
 /* OVERLAYS - absolute within #app */
 .ov{
   display:none;
-  position:absolute;inset:0;
-  background:rgba(0,0,0,.5);
-  z-index:100;
+  position:fixed;
+  top:0;right:0;bottom:0;left:0;
+  background:rgba(0,0,0,.6);
+  z-index:9999;
   align-items:flex-end;
   justify-content:center;
 }
@@ -195,18 +195,18 @@ body{
 .cdot{width:28px;height:28px;border-radius:50%;cursor:pointer;border:3px solid transparent;display:inline-block;margin:2px}
 .cdot.on{border-color:#2C2416;transform:scale(1.15)}
 /* Sidebar overlay */
-#sb-ov{display:none;position:absolute;inset:0;background:rgba(0,0,0,.4);z-index:49}
+#sb-ov{display:none;position:fixed;top:0;right:0;bottom:0;left:0;background:rgba(0,0,0,.4);z-index:49}
 #sb-ov.on{display:block}
 /* Toast - absolute, not fixed */
 #toast{
   display:none;
-  position:absolute;
+  position:fixed;
   bottom:calc(80px + env(safe-area-inset-bottom,0px));
   left:50%;transform:translateX(-50%);
   background:#2C2416;color:white;
   padding:9px 18px;border-radius:20px;
   font-size:13px;font-weight:500;
-  z-index:200;white-space:nowrap;
+  z-index:10000;white-space:nowrap;
 }
 #toast.on{display:block}
 #toast.ok{background:#27AE60}
@@ -229,7 +229,7 @@ body{
   <div id="sb">
     <div class="sb-head">
       <div class="sb-logo">✦ AI Panel</div>
-      <button class="sb-gear" onclick="document.getElementById('app').style.background='red';document.getElementById('mn').style.background='red'">⚙ TAP ME</button>
+      <button class="sb-gear" onclick="openOv('ov-settings')">⚙</button>
     </div>
     <div class="proj-row" id="proj-bar"></div>
     <div class="conv-ul" id="conv-list"></div>
@@ -246,7 +246,7 @@ body{
       <button id="menu-btn" data-action="toggle-sb" onclick="toggleSB()">☰</button>
       <div class="top-info">
         <div id="top-title">AI Panel</div>
-        <div id="top-sub">3 AIs · 1 synthesized answer <span style="background:#C9A84C;color:#2C2416;font-size:9px;font-weight:700;padding:1px 5px;border-radius:4px;margin-left:4px">v6</span></div>
+        <div id="top-sub">3 AIs · 1 synthesized answer <span style="background:#C9A84C;color:#2C2416;font-size:9px;font-weight:700;padding:1px 5px;border-radius:4px;margin-left:4px">v7</span></div>
       </div>
       <div class="top-right">
         <div id="badges"></div>
