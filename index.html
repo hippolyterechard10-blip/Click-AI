@@ -1,0 +1,640 @@
+<!DOCTYPE html>
+
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>AI Chat</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+:root{
+  --bg:#F7F2EA;--white:#FFFEF9;--earth:#2C2416;--gold:#C9A84C;
+  --muted:#9B8E7E;--bdr:#E0D8CC;--dark:#1E1810;
+  --red:#C0392B;--green:#27AE60;--blue:#4A7FA5;--purple:#6B5B95;
+  --safe-top:env(safe-area-inset-top,0px);
+  --safe-bottom:env(safe-area-inset-bottom,0px);
+}
+html,body{height:100%;overflow:hidden;background:var(--dark)}
+body{font-family:-apple-system,'Segoe UI',sans-serif;display:flex;flex-direction:column}
+.app{display:flex;height:100vh;height:100dvh;overflow:hidden}
+
+/* SIDEBAR */
+.sidebar{width:280px;background:var(–dark);flex-shrink:0;display:flex;flex-direction:column;overflow:hidden;transition:transform .25s;padding-top:var(–safe-top)}
+.sb-top{padding:14px 12px 8px;display:flex;align-items:center;gap:8px}
+.sb-title{font-size:17px;font-weight:800;color:var(–gold);flex:1}
+.icon-btn{width:30px;height:30px;border-radius:8px;border:none;cursor:pointer;background:rgba(255,255,255,.08);color:rgba(255,255,255,.55);font-size:15px;display:flex;align-items:center;justify-content:center}
+.icon-btn:active{background:rgba(255,255,255,.15)}
+.proj-bar{display:flex;overflow-x:auto;padding:4px 12px 8px;gap:6px;flex-shrink:0}
+.proj-bar::-webkit-scrollbar{display:none}
+.proj-chip{flex-shrink:0;padding:5px 12px;border-radius:20px;background:rgba(255,255,255,.08);color:rgba(255,255,255,.45);font-size:11px;font-weight:600;cursor:pointer;border:1.5px solid transparent;white-space:nowrap}
+.proj-chip.active{color:var(–earth)}
+.proj-new{background:transparent;border-color:rgba(255,255,255,.12);color:rgba(255,255,255,.3)}
+.conv-list{flex:1;overflow-y:auto;padding:4px 8px}
+.conv-list::-webkit-scrollbar{width:3px}
+.conv-list::-webkit-scrollbar-thumb{background:rgba(255,255,255,.08);border-radius:2px}
+.conv-item{padding:9px 10px;border-radius:11px;cursor:pointer;display:flex;align-items:flex-start;gap:7px;margin-bottom:2px}
+.conv-item:active{background:rgba(255,255,255,.06)}
+.conv-item.active{background:rgba(201,168,76,.12)}
+.ci-info{flex:1;min-width:0}
+.ci-title{font-size:12px;font-weight:600;color:rgba(255,255,255,.78);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.conv-item.active .ci-title{color:var(–gold)}
+.ci-meta{font-size:10px;color:rgba(255,255,255,.28);margin-top:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ci-del{font-size:13px;color:rgba(255,255,255,.18);padding:2px;border:none;background:none;cursor:pointer;opacity:0;flex-shrink:0}
+.conv-item:hover .ci-del{opacity:1}
+.no-conv{padding:20px 12px;text-align:center;font-size:11px;color:rgba(255,255,255,.25);line-height:1.6}
+.new-btn{margin:6px 8px;padding:10px;background:rgba(201,168,76,.12);border:1.5px dashed rgba(201,168,76,.25);border-radius:11px;color:var(–gold);font-size:12px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:5px;flex-shrink:0}
+.new-btn:active{background:rgba(201,168,76,.2)}
+.sb-foot{padding:8px;padding-bottom:calc(8px + var(–safe-bottom));border-top:1px solid rgba(255,255,255,.05);flex-shrink:0}
+.set-btn{width:100%;padding:9px;background:transparent;border:none;cursor:pointer;display:flex;align-items:center;gap:8px;border-radius:9px;color:rgba(255,255,255,.35);font-size:12px}
+.set-btn:active{background:rgba(255,255,255,.06)}
+
+/* MAIN */
+.main{flex:1;display:flex;flex-direction:column;background:var(–bg);min-width:0;overflow:hidden}
+.chat-hdr{background:var(–white);border-bottom:1px solid var(–bdr);padding:10px 14px;padding-top:calc(10px + var(–safe-top));display:flex;align-items:center;gap:9px;flex-shrink:0}
+.menu-btn{width:32px;height:32px;border-radius:8px;border:none;cursor:pointer;background:var(–bg);color:var(–earth);font-size:17px;display:none;align-items:center;justify-content:center;flex-shrink:0}
+.hdr-info{flex:1;min-width:0}
+.hdr-title{font-size:15px;font-weight:700;color:var(–earth);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.hdr-sub{font-size:10px;color:var(–muted);margin-top:1px}
+.hdr-btns{display:flex;gap:5px;flex-shrink:0}
+.hdr-btn{width:30px;height:30px;border-radius:8px;border:none;cursor:pointer;background:var(–bg);color:var(–muted);font-size:14px;display:flex;align-items:center;justify-content:center}
+.hdr-btn:active{background:var(–bdr)}
+
+/* MESSAGES */
+.msgs{flex:1;overflow-y:auto;padding:14px;display:flex;flex-direction:column;gap:10px}
+.msgs::-webkit-scrollbar{width:4px}
+.msgs::-webkit-scrollbar-thumb{background:var(–bdr);border-radius:2px}
+.msg{display:flex;flex-direction:column;max-width:84%}
+.msg.user{align-self:flex-end;align-items:flex-end}
+.msg.ai{align-self:flex-start;align-items:flex-start}
+.bubble{padding:10px 13px;border-radius:15px;font-size:14px;line-height:1.65;word-break:break-word}
+.msg.user .bubble{background:var(–gold);color:var(–earth);border-bottom-right-radius:4px;font-weight:500}
+.msg.ai .bubble{background:var(–white);color:var(–earth);border-bottom-left-radius:4px;box-shadow:0 1px 6px rgba(0,0,0,.07)}
+.msg-time{font-size:10px;color:var(–muted);margin-top:3px;padding:0 3px}
+.msg-img{max-width:200px;border-radius:11px;margin-bottom:5px;display:block}
+.msg-file{display:flex;align-items:center;gap:7px;padding:7px 10px;background:rgba(0,0,0,.05);border-radius:9px;margin-bottom:5px;font-size:11px;color:var(–muted)}
+
+/* Notion save button on AI messages */
+.msg-actions{display:flex;gap:5px;margin-top:4px;padding:0 2px}
+.msg-action-btn{padding:3px 8px;border-radius:8px;border:none;cursor:pointer;font-size:10px;font-weight:600;background:rgba(0,0,0,.05);color:var(–muted);display:flex;align-items:center;gap:3px;transition:background .1s}
+.msg-action-btn:active{background:rgba(0,0,0,.1)}
+.msg-action-btn.notion{background:#F0EBFF;color:var(–purple)}
+.msg-action-btn.notion:active{background:#E0D5FF}
+.msg-action-btn.copy{background:rgba(0,0,0,.04);color:var(–muted)}
+
+/* Markdown */
+.msg.ai .bubble strong{font-weight:700}
+.msg.ai .bubble em{font-style:italic}
+.msg.ai .bubble code{background:rgba(0,0,0,.07);padding:1px 5px;border-radius:4px;font-family:monospace;font-size:12px}
+.msg.ai .bubble pre{background:rgba(0,0,0,.06);padding:10px;border-radius:8px;overflow-x:auto;margin:6px 0;font-size:12px;font-family:monospace;white-space:pre-wrap}
+.msg.ai .bubble ul,.msg.ai .bubble ol{padding-left:16px;margin:4px 0}
+.msg.ai .bubble li{margin-bottom:2px}
+.msg.ai .bubble h1,.msg.ai .bubble h2,.msg.ai .bubble h3{font-weight:700;margin:8px 0 3px}
+.msg.ai .bubble p{margin-bottom:5px}
+.msg.ai .bubble p:last-child{margin-bottom:0}
+.typing-wrap{display:flex;align-items:center;gap:4px;padding:11px 13px}
+.typing-wrap span{width:7px;height:7px;border-radius:50%;background:var(–muted);animation:bob .9s infinite}
+.typing-wrap span:nth-child(2){animation-delay:.15s}
+.typing-wrap span:nth-child(3){animation-delay:.3s}
+@keyframes bob{0%,80%,100%{transform:translateY(0)}40%{transform:translateY(-5px)}}
+.empty{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;padding:28px}
+.empty .ico{font-size:44px;opacity:.25}
+.empty h3{font-size:17px;font-weight:700;color:var(–muted)}
+.empty p{font-size:13px;color:var(–muted);text-align:center;max-width:240px;line-height:1.6}
+
+/* INPUT */
+.input-area{background:var(–white);border-top:1px solid var(–bdr);padding:9px 11px;padding-bottom:calc(9px + var(–safe-bottom));flex-shrink:0}
+.att-row{display:flex;gap:7px;flex-wrap:wrap;margin-bottom:7px}
+.att-prev{position:relative;width:52px;height:52px;border-radius:9px;overflow:visible;background:var(–bg);flex-shrink:0}
+.att-prev img{width:52px;height:52px;border-radius:9px;object-fit:cover;display:block}
+.att-file{width:52px;height:52px;display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:18px;border-radius:9px;background:var(–bg)}
+.att-name{font-size:8px;color:var(–muted);text-align:center;padding:0 2px;margin-top:1px}
+.att-rm{position:absolute;top:-5px;right:-5px;width:17px;height:17px;background:var(–red);color:white;border-radius:50%;font-size:10px;display:flex;align-items:center;justify-content:center;cursor:pointer;border:1.5px solid var(–white);font-weight:700}
+.inp-row{display:flex;align-items:flex-end;gap:7px}
+.inp-btns{display:flex;gap:3px;flex-shrink:0;padding-bottom:1px}
+.inp-btn{width:34px;height:34px;border-radius:9px;border:none;cursor:pointer;background:var(–bg);color:var(–muted);font-size:17px;display:flex;align-items:center;justify-content:center}
+.inp-btn:active{background:var(–bdr)}
+.inp-btn.rec{background:#FAEAE4;color:var(–red);animation:pulse .8s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.5}}
+.inp-wrap{flex:1;background:var(–bg);border:1.5px solid var(–bdr);border-radius:19px;display:flex;align-items:flex-end;padding:5px 11px;transition:border-color .15s}
+.inp-wrap:focus-within{border-color:var(–gold)}
+#msg-in{flex:1;border:none;background:transparent;outline:none;resize:none;font-family:inherit;font-size:15px;color:var(–earth);line-height:1.5;max-height:110px;min-height:22px;overflow-y:auto}
+#msg-in::placeholder{color:#C0B0A0}
+.send-btn{width:34px;height:34px;border-radius:50%;border:none;cursor:pointer;background:var(–gold);color:var(–earth);font-size:17px;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-weight:700}
+.send-btn:disabled{opacity:.35;cursor:not-allowed}
+.send-btn:not(:disabled):active{opacity:.8}
+
+/* OVERLAYS */
+.ov{display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:100;align-items:flex-end;justify-content:center}
+.ov.on{display:flex}
+.modal{background:var(–bg);border-radius:20px 20px 0 0;width:100%;max-width:520px;max-height:88vh;overflow-y:auto;padding-bottom:calc(16px + var(–safe-bottom))}
+.m-handle{width:36px;height:4px;background:#C7C7CC;border-radius:2px;margin:8px auto 14px}
+.m-lbl-sec{font-size:10px;font-weight:700;color:var(–muted);text-transform:uppercase;letter-spacing:.8px;padding:8px 18px 4px}
+.m-section{background:var(–white);border-radius:13px;margin:0 12px 8px;overflow:hidden}
+.m-row{display:flex;align-items:center;padding:12px 14px;border-bottom:.5px solid var(–bdr)}
+.m-row:last-child{border-bottom:none}
+.m-lbl{font-size:14px;color:var(–earth);flex:1}
+.m-lbl.red{color:var(–red)}
+.m-key{font-size:11px;font-weight:700;width:80px;flex:none}
+.m-in{flex:1;border:none;outline:none;background:transparent;font-size:14px;color:var(–earth);text-align:right;font-family:inherit;min-width:0}
+.m-in:focus{text-align:left}
+.m-in::placeholder{color:var(–muted)}
+.m-chevron{color:var(–muted);font-size:14px}
+.m-act{margin:0 12px 6px}
+.m-btn{width:100%;padding:13px;border:none;border-radius:13px;font-size:15px;font-weight:700;cursor:pointer;font-family:inherit;margin-bottom:6px}
+.m-btn.prim{background:var(–earth);color:white}
+.m-btn.red{background:#FEF2F2;color:var(–red)}
+.m-btn:active{opacity:.8}
+.color-grid{display:flex;gap:9px;flex-wrap:wrap;padding:0}
+.c-dot{width:28px;height:28px;border-radius:50%;cursor:pointer;border:3px solid transparent;transition:transform .1s}
+.c-dot.sel{border-color:var(–earth);transform:scale(1.15)}
+
+/* Notion badge */
+.notion-badge{display:inline-flex;align-items:center;gap:4px;background:#F0EBFF;color:var(–purple);font-size:10px;font-weight:700;padding:2px 8px;border-radius:10px;margin-left:4px}
+
+.sb-ov{display:none;position:fixed;inset:0;background:rgba(0,0,0,.35);z-index:49}
+.sb-ov.on{display:block}
+.toast{position:fixed;bottom:calc(80px + var(–safe-bottom));left:50%;transform:translateX(-50%);background:var(–earth);color:white;padding:9px 18px;border-radius:20px;font-size:13px;font-weight:500;z-index:200;opacity:0;transition:opacity .2s;pointer-events:none;white-space:nowrap}
+.toast.on{opacity:1}
+.toast.success{background:var(–green)}
+.toast.error{background:var(–red)}
+
+@media(max-width:640px){
+.sidebar{position:fixed;top:0;left:0;bottom:0;z-index:50;transform:translateX(-100%);width:78%;max-width:290px}
+.sidebar.open{transform:translateX(0)}
+.menu-btn{display:flex}
+}
+</style>
+
+</head>
+<body>
+<div class="app">
+  <div class="sb-ov" id="sb-ov" onclick="closeSB()"></div>
+
+  <!-- SIDEBAR -->
+
+  <div class="sidebar" id="sidebar">
+    <div class="sb-top">
+      <div class="sb-title">✦ AI Chat</div>
+      <button class="icon-btn" onclick="openOv('ov-settings')">⚙</button>
+    </div>
+    <div class="proj-bar" id="proj-bar"></div>
+    <div class="conv-list" id="conv-list"></div>
+    <button class="new-btn" onclick="newConv()"><span>＋</span>New conversation</button>
+    <div class="sb-foot">
+      <button class="set-btn" onclick="openOv('ov-settings')"><span>🔑</span><span>API Keys & Settings</span></button>
+    </div>
+  </div>
+
+  <!-- MAIN -->
+
+  <div class="main">
+    <div class="chat-hdr">
+      <button class="menu-btn" id="menu-btn" onclick="toggleSB()">☰</button>
+      <div class="hdr-info">
+        <div class="hdr-title" id="hdr-title">AI Chat</div>
+        <div class="hdr-sub" id="hdr-sub">Create or select a conversation</div>
+      </div>
+      <div class="hdr-btns">
+        <button class="hdr-btn" onclick="clearConv()" title="Clear">🗑</button>
+        <button class="hdr-btn" onclick="renameConv()" title="Rename">✏️</button>
+      </div>
+    </div>
+    <div class="msgs" id="msgs">
+      <div class="empty" id="empty">
+        <div class="ico">✦</div>
+        <h3>Start chatting</h3>
+        <p>Type below or tap the mic.<br>Your conversations are saved locally.</p>
+      </div>
+    </div>
+    <div class="input-area">
+      <div class="att-row" id="att-row"></div>
+      <div class="inp-row">
+        <div class="inp-btns">
+          <button class="inp-btn" onclick="trigAtt()">📎</button>
+          <button class="inp-btn" id="voice-btn" onclick="toggleVoice()">🎤</button>
+        </div>
+        <div class="inp-wrap">
+          <textarea id="msg-in" placeholder="Message…" rows="1"
+            oninput="resize(this);updateSend()"
+            onkeydown="keyDown(event)"></textarea>
+        </div>
+        <button class="send-btn" id="send-btn" onclick="send()" disabled>↑</button>
+      </div>
+    </div>
+    <input type="file" id="file-in" style="display:none"
+      accept="image/*,.pdf,.txt,.md,.csv,.js,.py,.html,.css,.json"
+      multiple onchange="handleFiles(this.files)">
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<!-- SETTINGS -->
+
+<div class="ov" id="ov-settings" onclick="if(event.target===this)closeOv('ov-settings')">
+  <div class="modal">
+    <div class="m-handle"></div>
+
+```
+<div class="m-lbl-sec">🤖 AI Models</div>
+<div class="m-section">
+  <div class="m-row"><span class="m-key" style="color:#C9A84C">Anthropic</span><input class="m-in" id="k-anthropic" type="password" placeholder="sk-ant-..." oninput="saveKeys()"/></div>
+  <div class="m-row"><span class="m-key" style="color:#4A7FA5">Gemini</span><input class="m-in" id="k-gemini" type="password" placeholder="AIza..." oninput="saveKeys()"/></div>
+  <div class="m-row"><span class="m-key" style="color:#27AE60">OpenAI</span><input class="m-in" id="k-openai" type="password" placeholder="sk-..." oninput="saveKeys()"/></div>
+</div>
+
+<div class="m-lbl-sec">📁 Productivity <span class="notion-badge">✓ API Key</span></div>
+<div class="m-section">
+  <div class="m-row"><span class="m-key" style="color:#6B5B95">Notion</span><input class="m-in" id="k-notion" type="password" placeholder="secret_..." oninput="saveKeys()"/></div>
+  <div class="m-row"><span class="m-key" style="color:#6B5B95" style="font-size:10px">Notion Page</span><input class="m-in" id="k-notion-page" type="text" placeholder="Page ID to save to…" oninput="saveKeys()"/></div>
+  <div class="m-row"><span class="m-key" style="color:#8B6914">Airtable</span><input class="m-in" id="k-airtable" type="password" placeholder="pat..." oninput="saveKeys()"/></div>
+</div>
+
+<div class="m-lbl-sec">💳 Finance</div>
+<div class="m-section">
+  <div class="m-row"><span class="m-key" style="color:#6B5B95">Stripe</span><input class="m-in" id="k-stripe" type="password" placeholder="sk_live_..." oninput="saveKeys()"/></div>
+  <div class="m-row"><span class="m-key" style="color:#4A7A5A">Alpaca</span><input class="m-in" id="k-alpaca" type="password" placeholder="API key..." oninput="saveKeys()"/></div>
+</div>
+
+<div class="m-lbl-sec">🔧 Other</div>
+<div class="m-section">
+  <div class="m-row"><span class="m-key" style="color:#8B6914">Custom</span><input class="m-in" id="k-custom" type="password" placeholder="Other API key..." oninput="saveKeys()"/></div>
+</div>
+
+<div class="m-lbl-sec">📂 Projects</div>
+<div class="m-section">
+  <div class="m-row" style="cursor:pointer" onclick="closeOv('ov-settings');openOv('ov-proj');resetProjModal()"><span class="m-lbl">New Project</span><span class="m-chevron">›</span></div>
+  <div class="m-row" style="cursor:pointer" onclick="closeOv('ov-settings');editProj()"><span class="m-lbl">Edit Current Project</span><span class="m-chevron">›</span></div>
+</div>
+
+<div class="m-act"><button class="m-btn prim" onclick="closeOv('ov-settings')">Done</button></div>
+```
+
+  </div>
+</div>
+
+<!-- PROJECT -->
+
+<div class="ov" id="ov-proj" onclick="if(event.target===this)closeOv('ov-proj')">
+  <div class="modal">
+    <div class="m-handle"></div>
+    <div class="m-lbl-sec" id="proj-modal-lbl">New Project</div>
+    <div class="m-section">
+      <div class="m-row"><span class="m-lbl">Name</span><input class="m-in" id="proj-name" placeholder="My Project"/></div>
+      <div class="m-row" style="flex-direction:column;align-items:flex-start;gap:8px">
+        <span class="m-lbl">Color</span>
+        <div class="color-grid" id="color-grid"></div>
+      </div>
+    </div>
+    <div class="m-act">
+      <button class="m-btn prim" onclick="saveProj()">Save</button>
+      <button class="m-btn red" id="proj-del-btn" style="display:none" onclick="deleteProj()">Delete Project</button>
+    </div>
+  </div>
+</div>
+
+<!-- RENAME -->
+
+<div class="ov" id="ov-rename" onclick="if(event.target===this)closeOv('ov-rename')">
+  <div class="modal">
+    <div class="m-handle"></div>
+    <div class="m-lbl-sec">Rename Conversation</div>
+    <div class="m-section">
+      <div class="m-row"><input class="m-in" id="rename-in" placeholder="Conversation name…" style="text-align:left;width:100%"/></div>
+    </div>
+    <div class="m-act"><button class="m-btn prim" onclick="doRename()">Save</button></div>
+  </div>
+</div>
+
+<script>
+var COLORS=['#C9A84C','#4A7FA5','#A85C3A','#4A7A5A','#6B5B95','#8B6914','#3A7A7A','#C0392B'];
+var KEY_IDS=['k-anthropic','k-gemini','k-openai','k-notion','k-notion-page','k-airtable','k-stripe','k-alpaca','k-custom'];
+
+// ── STORAGE ──
+function ls(k,v){try{if(v===undefined)return JSON.parse(localStorage.getItem(k));localStorage.setItem(k,JSON.stringify(v));}catch(e){return null;}}
+function getKey(id){try{var el=document.getElementById(id);if(el&&el.value.trim())return el.value.trim();return ls('aic_'+id)||'';}catch(e){return '';}}
+function saveKeys(){KEY_IDS.forEach(function(id){var el=document.getElementById(id);if(el)ls('aic_'+id,el.value);});}
+function loadKeys(){KEY_IDS.forEach(function(id){var el=document.getElementById(id);if(el){var v=ls('aic_'+id);if(v)el.value=v;}});}
+function getProjs(){return ls('aic_projs')||[{id:'default',name:'General',color:'#C9A84C',at:Date.now()}];}
+function saveProjs(p){ls('aic_projs',p);}
+function getConvs(pid){return ls('aic_c_'+pid)||[];}
+function saveConvs(pid,c){ls('aic_c_'+pid,c);}
+
+// ── STATE ──
+var S={projects:[],pid:null,convs:[],cid:null,atts:[],rec:false,busy:false};
+var recognition=null;
+
+// ── INIT ──
+function init(){
+  S.projects=getProjs();
+  if(!S.projects.length){S.projects=[{id:'default',name:'General',color:'#C9A84C',at:Date.now()}];saveProjs(S.projects);}
+  S.pid=S.projects[0].id;
+  loadConvs();render();loadKeys();initVoice();
+}
+function loadConvs(){S.convs=getConvs(S.pid);S.cid=S.convs.length?S.convs[0].id:null;}
+
+// ── RENDER ──
+function render(){renderProjs();renderConvList();renderMsgs();updateHdr();}
+
+function renderProjs(){
+  var bar=document.getElementById('proj-bar');
+  bar.innerHTML=S.projects.map(function(p){
+    var a=p.id===S.pid;
+    return '<div class="proj-chip'+(a?' active':'')+'" style="'+(a?'background:'+p.color+';color:#2C2416;':'')+'" onclick="switchProj(\''+p.id+'\')">'
+      +esc(p.name)+'</div>';
+  }).join('')+'<div class="proj-chip proj-new" onclick="openOv(\'ov-proj\');resetProjModal()">＋</div>';
+}
+
+function renderConvList(){
+  var el=document.getElementById('conv-list');
+  if(!S.convs.length){el.innerHTML='<div class="no-conv">No conversations yet.<br>Press + to start one.</div>';return;}
+  el.innerHTML=S.convs.map(function(c){
+    var a=c.id===S.cid;
+    var last=c.msgs&&c.msgs.length?c.msgs[c.msgs.length-1]:null;
+    var prev=last?(typeof last.content==='string'?last.content.slice(0,38):'📎'):'';
+    return '<div class="conv-item'+(a?' active':'')+'" onclick="switchConv(\''+c.id+'\')">'
+      +'<div class="ci-info">'
+        +'<div class="ci-title">'+esc(c.title||'New conversation')+'</div>'
+        +'<div class="ci-meta">'+fmtDate(new Date(c.at||c.created))+(prev?' · '+esc(prev.trim()):'')+'</div>'
+      +'</div>'
+      +'<button class="ci-del" onclick="delConv(event,\''+c.id+'\')">✕</button>'
+      +'</div>';
+  }).join('');
+}
+
+function renderMsgs(){
+  var el=document.getElementById('msgs');
+  var empty=document.getElementById('empty');
+  var conv=curConv();
+  if(!conv||!conv.msgs||!conv.msgs.length){empty.style.display='flex';el.innerHTML='';el.appendChild(empty);return;}
+  empty.style.display='none';el.innerHTML='';
+  conv.msgs.forEach(function(msg,idx){
+    var wrap=document.createElement('div');
+    wrap.className='msg '+msg.role;
+    if(msg.atts&&msg.atts.length){
+      msg.atts.forEach(function(a){
+        if(a.type==='image'){var img=document.createElement('img');img.className='msg-img';img.src=a.src;wrap.appendChild(img);}
+        else{var fd=document.createElement('div');fd.className='msg-file';fd.innerHTML='📄 '+esc(a.name);wrap.appendChild(fd);}
+      });
+    }
+    var bub=document.createElement('div');
+    bub.className='bubble';
+    bub.innerHTML=msg.role==='ai'?mdRender(msg.content):esc(msg.content).replace(/\n/g,'<br>');
+    wrap.appendChild(bub);
+    // Actions for AI messages
+    if(msg.role==='ai'){
+      var acts=document.createElement('div');
+      acts.className='msg-actions';
+      acts.innerHTML='<button class="msg-action-btn copy" onclick="copyMsg('+idx+')">📋 Copy</button>'
+        +(getKey('k-notion')&&getKey('k-notion-page')
+          ?'<button class="msg-action-btn notion" onclick="saveToNotion('+idx+')">◻ Save to Notion</button>'
+          :'');
+      wrap.appendChild(acts);
+    }
+    var t=document.createElement('div');t.className='msg-time';t.textContent=fmtTime(new Date(msg.ts||Date.now()));
+    wrap.appendChild(t);
+    el.appendChild(wrap);
+  });
+  scrollDown();
+}
+
+function updateHdr(){
+  var c=curConv(),p=curProj();
+  document.getElementById('hdr-title').textContent=c?(c.title||'New conversation'):'AI Chat';
+  document.getElementById('hdr-sub').textContent=p?p.name:'Select a conversation';
+}
+function addTyping(){var el=document.getElementById('msgs');var d=document.createElement('div');d.className='msg ai';d.id='typing';d.innerHTML='<div class="bubble"><div class="typing-wrap"><span></span><span></span><span></span></div></div>';el.appendChild(d);scrollDown();}
+function rmTyping(){var t=document.getElementById('typing');if(t)t.remove();}
+
+// ── NAV ──
+function switchProj(id){S.pid=id;loadConvs();render();if(window.innerWidth<=640)closeSB();}
+function switchConv(id){S.cid=id;renderConvList();renderMsgs();updateHdr();if(window.innerWidth<=640)closeSB();}
+function newConv(){
+  var id='c'+Date.now();
+  S.convs.unshift({id:id,title:'New conversation',msgs:[],created:Date.now(),at:Date.now()});
+  saveConvs(S.pid,S.convs);S.cid=id;
+  renderConvList();renderMsgs();updateHdr();
+  if(window.innerWidth<=640)closeSB();
+  setTimeout(function(){document.getElementById('msg-in').focus();},100);
+}
+function delConv(e,id){
+  e.stopPropagation();
+  S.convs=S.convs.filter(function(c){return c.id!==id;});
+  saveConvs(S.pid,S.convs);
+  if(S.cid===id)S.cid=S.convs.length?S.convs[0].id:null;
+  renderConvList();renderMsgs();updateHdr();
+}
+function clearConv(){var c=curConv();if(!c)return;if(!confirm('Clear this conversation?'))return;c.msgs=[];c.at=Date.now();save();renderMsgs();}
+
+// ── SEND ──
+function keyDown(e){if(e.key==='Enter'&&!e.shiftKey&&window.innerWidth>640){e.preventDefault();send();}}
+function resize(el){el.style.height='auto';el.style.height=Math.min(el.scrollHeight,110)+'px';}
+function updateSend(){document.getElementById('send-btn').disabled=!document.getElementById('msg-in').value.trim()&&!S.atts.length;}
+
+async function send(){
+  if(S.busy)return;
+  var inp=document.getElementById('msg-in');
+  var text=inp.value.trim();
+  var atts=S.atts.slice();
+  if(!text&&!atts.length)return;
+  var apiKey=getKey('k-anthropic');
+  if(!apiKey){openOv('ov-settings');toast('Add your Anthropic API key first','error');return;}
+  if(!S.cid)newConv();
+  var conv=curConv();
+  if(!conv.msgs.length&&text){conv.title=text.slice(0,48)+(text.length>48?'…':'');updateHdr();renderConvList();}
+  var userMsg={role:'user',content:text,atts:atts.map(function(a){return{type:a.type,name:a.name,src:a.src};}),ts:Date.now()};
+  conv.msgs.push(userMsg);conv.at=Date.now();
+  inp.value='';inp.style.height='auto';S.atts=[];
+  document.getElementById('att-row').innerHTML='';
+  document.getElementById('send-btn').disabled=true;
+  save();renderMsgs();addTyping();S.busy=true;
+  try{
+    var reply=await callClaude(apiKey,buildMsgs(conv.msgs,atts));
+    rmTyping();
+    conv.msgs.push({role:'ai',content:reply,ts:Date.now()});conv.at=Date.now();
+    save();renderMsgs();renderConvList();
+  }catch(err){
+    rmTyping();
+    conv.msgs.push({role:'ai',content:'Error: '+err.message,ts:Date.now()});
+    save();renderMsgs();
+  }
+  S.busy=false;
+}
+
+function buildMsgs(msgs,newAtts){
+  return msgs.map(function(msg,i){
+    if(msg.role==='user'){
+      var isLast=i===msgs.length-1;
+      var atts=isLast?newAtts:[];
+      if(atts&&atts.length){
+        var parts=[];
+        atts.forEach(function(a){
+          if(a.type==='image')parts.push({type:'image',source:{type:'base64',media_type:a.mime,data:a.b64}});
+          else if(a.txt)parts.push({type:'text',text:'[File: '+a.name+']\n'+a.txt});
+        });
+        if(msg.content)parts.push({type:'text',text:msg.content});
+        return{role:'user',content:parts};
+      }
+      return{role:'user',content:msg.content||'.'};
+    }
+    return{role:'assistant',content:msg.content};
+  });
+}
+
+async function callClaude(key,msgs){
+  var r=await fetch('https://api.anthropic.com/v1/messages',{
+    method:'POST',
+    headers:{'Content-Type':'application/json','x-api-key':key,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
+    body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:2000,
+      system:'You are a helpful AI assistant. Use markdown formatting when helpful.',messages:msgs})
+  });
+  var d=await r.json();
+  if(d.error)throw new Error(d.error.message);
+  return d.content[0].text;
+}
+
+// ── NOTION INTEGRATION ──
+async function saveToNotion(msgIdx){
+  var notionKey=getKey('k-notion');
+  var pageId=getKey('k-notion-page');
+  if(!notionKey||!pageId){toast('Add Notion key + Page ID in settings','error');return;}
+  var conv=curConv();if(!conv)return;
+  var msg=conv.msgs[msgIdx];if(!msg)return;
+  // Clean pageId (remove dashes, spaces)
+  pageId=pageId.replace(/[-\s]/g,'');
+  // Format as UUID
+  if(pageId.length===32)pageId=pageId.slice(0,8)+'-'+pageId.slice(8,12)+'-'+pageId.slice(12,16)+'-'+pageId.slice(16,20)+'-'+pageId.slice(20);
+  var title=(conv.title||'AI Chat')+' · '+fmtTime(new Date(msg.ts||Date.now()));
+  var text=msg.content;
+  try{
+    var r=await fetch('https://api.notion.com/v1/pages',{
+      method:'POST',
+      headers:{'Authorization':'Bearer '+notionKey,'Notion-Version':'2022-06-28','Content-Type':'application/json'},
+      body:JSON.stringify({
+        parent:{page_id:pageId},
+        properties:{title:{title:[{text:{content:title}}]}},
+        children:[{object:'block',type:'paragraph',paragraph:{rich_text:[{type:'text',text:{content:text.slice(0,2000)}}]}}]
+      })
+    });
+    var d=await r.json();
+    if(d.status&&d.status>=400)throw new Error(d.message||'Notion error');
+    toast('Saved to Notion ✓','success');
+  }catch(e){
+    toast('Notion error: '+e.message,'error');
+  }
+}
+
+// ── COPY ──
+function copyMsg(idx){
+  var conv=curConv();if(!conv)return;
+  var msg=conv.msgs[idx];if(!msg)return;
+  navigator.clipboard.writeText(msg.content).then(function(){toast('Copied ✓');}).catch(function(){toast('Copy failed','error');});
+}
+
+// ── ATTACHMENTS ──
+function trigAtt(){document.getElementById('file-in').click();}
+function handleFiles(files){
+  Array.from(files).forEach(function(f){
+    var r=new FileReader();
+    if(f.type.startsWith('image/')){
+      r.onload=function(e){var full=e.target.result;S.atts.push({type:'image',name:f.name,mime:f.type,b64:full.split(',')[1],src:full});renderAttPrev();updateSend();};
+      r.readAsDataURL(f);
+    }else{
+      r.onload=function(e){S.atts.push({type:'file',name:f.name,mime:f.type,txt:e.target.result,src:null});renderAttPrev();updateSend();};
+      r.readAsText(f);
+    }
+  });
+  document.getElementById('file-in').value='';
+}
+function renderAttPrev(){
+  document.getElementById('att-row').innerHTML=S.atts.map(function(a,i){
+    if(a.type==='image')return '<div class="att-prev"><img src="'+a.src+'"><div class="att-rm" onclick="rmAtt('+i+')">✕</div></div>';
+    return '<div class="att-prev"><div class="att-file">📄<div class="att-name">'+esc(a.name.slice(0,12))+'</div></div><div class="att-rm" onclick="rmAtt('+i+')">✕</div></div>';
+  }).join('');
+}
+function rmAtt(i){S.atts.splice(i,1);renderAttPrev();updateSend();}
+
+// ── VOICE ──
+function initVoice(){
+  var SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+  if(!SR){document.getElementById('voice-btn').style.opacity='.3';return;}
+  recognition=new SR();recognition.lang='fr-FR';recognition.interimResults=true;
+  recognition.onresult=function(e){var t='';for(var i=0;i<e.results.length;i++)t+=e.results[i][0].transcript;document.getElementById('msg-in').value=t;resize(document.getElementById('msg-in'));updateSend();};
+  recognition.onend=function(){S.rec=false;var b=document.getElementById('voice-btn');b.classList.remove('rec');b.textContent='🎤';};
+  recognition.onerror=function(e){S.rec=false;var b=document.getElementById('voice-btn');b.classList.remove('rec');b.textContent='🎤';if(e.error!=='no-speech')toast('Voice: '+e.error,'error');};
+}
+function toggleVoice(){
+  if(!recognition){toast('Voice not supported');return;}
+  var b=document.getElementById('voice-btn');
+  if(S.rec){recognition.stop();S.rec=false;b.classList.remove('rec');b.textContent='🎤';}
+  else{recognition.start();S.rec=true;b.classList.add('rec');b.textContent='⏹';}
+}
+
+// ── PROJECTS ──
+var editPid=null;
+function resetProjModal(){editPid=null;document.getElementById('proj-modal-lbl').textContent='New Project';document.getElementById('proj-name').value='';document.getElementById('proj-del-btn').style.display='none';renderColors(COLORS[0]);}
+function editProj(){var p=curProj();if(!p)return;editPid=p.id;document.getElementById('proj-modal-lbl').textContent='Edit Project';document.getElementById('proj-name').value=p.name;document.getElementById('proj-del-btn').style.display=p.id!=='default'?'block':'none';renderColors(p.color);openOv('ov-proj');}
+function renderColors(sel){document.getElementById('color-grid').innerHTML=COLORS.map(function(c){return '<div class="c-dot'+(c===sel?' sel':'')+'" style="background:'+c+'" onclick="selColor(\''+c+'\')"></div>';}).join('');}
+function selColor(c){renderColors(c);}
+function getSelColor(){var d=document.querySelector('.c-dot.sel');return d?d.style.background:COLORS[0];}
+function saveProj(){
+  var name=document.getElementById('proj-name').value.trim();if(!name){toast('Enter a name','error');return;}
+  var color=getSelColor();
+  if(editPid){var p=S.projects.find(function(x){return x.id===editPid;});if(p){p.name=name;p.color=color;}}
+  else{var id='p'+Date.now();S.projects.push({id:id,name:name,color:color,at:Date.now()});S.pid=id;loadConvs();}
+  saveProjs(S.projects);render();closeOv('ov-proj');
+}
+function deleteProj(){
+  if(!editPid||editPid==='default'){toast('Cannot delete default project','error');return;}
+  if(!confirm('Delete project and all conversations?'))return;
+  S.projects=S.projects.filter(function(p){return p.id!==editPid;});
+  saveProjs(S.projects);try{localStorage.removeItem('aic_c_'+editPid);}catch(e){}
+  S.pid=S.projects[0].id;loadConvs();render();closeOv('ov-proj');
+}
+
+// ── RENAME ──
+function renameConv(){var c=curConv();if(!c)return;document.getElementById('rename-in').value=c.title||'';openOv('ov-rename');setTimeout(function(){document.getElementById('rename-in').focus();},200);}
+function doRename(){var v=document.getElementById('rename-in').value.trim();var c=curConv();if(!c||!v)return;c.title=v;save();renderConvList();updateHdr();closeOv('ov-rename');}
+
+// ── OVERLAYS & SIDEBAR ──
+function openOv(id){document.getElementById(id).classList.add('on');}
+function closeOv(id){document.getElementById(id).classList.remove('on');}
+document.addEventListener('keydown',function(e){if(e.key==='Escape')document.querySelectorAll('.ov.on').forEach(function(o){o.classList.remove('on');});});
+function toggleSB(){var s=document.getElementById('sidebar'),o=document.getElementById('sb-ov');var open=s.classList.toggle('open');o.classList.toggle('on',open);}
+function closeSB(){document.getElementById('sidebar').classList.remove('open');document.getElementById('sb-ov').classList.remove('on');}
+
+// ── HELPERS ──
+function curConv(){return S.convs.find(function(c){return c.id===S.cid;})||null;}
+function curProj(){return S.projects.find(function(p){return p.id===S.pid;})||null;}
+function save(){saveConvs(S.pid,S.convs);}
+function scrollDown(){var m=document.getElementById('msgs');setTimeout(function(){m.scrollTop=m.scrollHeight;},40);}
+function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+function fmtDate(d){var n=new Date(),diff=n-d;if(diff<86400000)return 'Today';if(diff<172800000)return 'Yesterday';return d.toLocaleDateString('fr-FR',{day:'numeric',month:'short'});}
+function fmtTime(d){return d.toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'});}
+function toast(msg,type){var t=document.getElementById('toast');t.textContent=msg;t.className='toast on'+(type?' '+type:'');setTimeout(function(){t.classList.remove('on');},2400);}
+function mdRender(t){
+  return t.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+    .replace(/```[\s\S]*?```/g,function(m){return '<pre><code>'+m.slice(3,-3)+'</code></pre>';})
+
+```
+.replace(/`([^`]+)`/g,'<code>$1</code>')
+.replace(/\*\*([^*]+)\*\*/g,'<strong>$1</strong>')
+.replace(/\*([^*\n]+)\*/g,'<em>$1</em>')
+.replace(/^### (.+)$/gm,'<h3>$1</h3>')
+.replace(/^## (.+)$/gm,'<h2>$1</h2>')
+.replace(/^# (.+)$/gm,'<h1>$1</h1>')
+.replace(/^- (.+)$/gm,'<li>$1</li>')
+.replace(/(<li>.*<\/li>\n?)+/g,'<ul>$&</ul>')
+.replace(/\n\n+/g,'</p><p>')
+.replace(/\n/g,'<br>');
+```
+
+}
+
+init();
+</script>
+
+</body>
+</html>
