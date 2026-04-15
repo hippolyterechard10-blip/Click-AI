@@ -229,11 +229,11 @@ body{
   <div id="sb">
     <div class="sb-head">
       <div class="sb-logo">✦ AI Panel</div>
-      <button class="sb-gear" onclick="openOv('ov-settings')">⚙</button>
+      <button class="sb-gear" onclick="testFixed()">⚙</button>
     </div>
     <div class="proj-row" id="proj-bar"></div>
     <div class="conv-ul" id="conv-list"></div>
-    <button class="new-q" onclick="document.getElementById('app').style.background='blue'">＋ TAP ME BLUE</button>
+    <button class="new-q" onclick="newConv()">＋ New question</button>
     <div class="sb-foot">
       <button class="keys-btn" data-action="settings" onclick="openOv('ov-settings')">🔑 API Keys &amp; Settings</button>
     </div>
@@ -246,7 +246,7 @@ body{
       <button id="menu-btn" data-action="toggle-sb" onclick="toggleSB()">☰</button>
       <div class="top-info">
         <div id="top-title">AI Panel</div>
-        <div id="top-sub">3 AIs · 1 synthesized answer <span style="background:#C9A84C;color:#2C2416;font-size:9px;font-weight:700;padding:1px 5px;border-radius:4px;margin-left:4px">v7</span></div>
+        <div id="top-sub">3 AIs · 1 synthesized answer <span style="background:#C9A84C;color:#2C2416;font-size:9px;font-weight:700;padding:1px 5px;border-radius:4px;margin-left:4px">v8</span></div>
       </div>
       <div class="top-right">
         <div id="badges"></div>
@@ -791,6 +791,15 @@ window.clearConv=clearConv;window.renameConv=renameConv;window.doRename=doRename
 window.clearConv=clearConv;window.ask=ask;window.toggleVoice=toggleVoice;
 window.saveProj=saveProj;window.deleteProj=deleteProj;window.editProj=editProj;
 window.resetProj=resetProj;window.switchProj=switchProj;window.switchConv=switchConv;
+
+function testFixed(){
+// Test 1: direct style via JS
+var d = document.createElement(‘div’);
+d.style.cssText = ‘position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.8);z-index:99999;display:flex;align-items:center;justify-content:center;color:white;font-size:24px;font-family:sans-serif;’;
+d.textContent = ‘TAP HERE TO CLOSE - FIXED WORKS!’;
+d.onclick = function(){ document.body.removeChild(d); };
+document.body.appendChild(d);
+}
 
 init();
 setupEvents();
