@@ -164,8 +164,8 @@ padding:14px 16px;box-shadow:0 2px 12px rgba(0,0,0,.06)}
 #q-send:not(:disabled):active{opacity:.8}
 
 /* ── OVERLAYS ── */
-.ov{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:100;display:flex;align-items:flex-end;justify-content:center;opacity:0;pointer-events:none;transition:opacity .2s}
-.ov.on{opacity:1;pointer-events:auto}
+.ov{display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:100;align-items:flex-end;justify-content:center}
+.ov.on{display:flex}
 .sheet{background:#F5F0E8;border-radius:22px 22px 0 0;width:100%;max-height:88vh;overflow-y:auto;padding-bottom:calc(16px + var(–sb))}
 .sheet::-webkit-scrollbar{display:none}
 .s-handle{width:36px;height:4px;background:#C8C0B8;border-radius:2px;margin:10px auto 14px}
@@ -192,8 +192,8 @@ padding:14px 16px;box-shadow:0 2px 12px rgba(0,0,0,.06)}
 .sb-gear:active,.new-conv:active,.api-btn:active,.top-btn:active,
 .inp-ico:active,.s-btn:active,.s-row:active{opacity:.6 !important}
 button:active{opacity:.6}
-#sb-ov{position:fixed;inset:0;background:rgba(0,0,0,.35);z-index:49;opacity:0;pointer-events:none;transition:opacity .2s}
-#sb-ov.on{opacity:1;pointer-events:auto}
+#sb-ov{display:none;position:fixed;inset:0;background:rgba(0,0,0,.35);z-index:49}
+#sb-ov.on{display:block}
 #toast{position:fixed;bottom:calc(80px + var(–sb));left:50%;transform:translateX(-50%);background:var(–earth);color:white;padding:9px 18px;border-radius:20px;font-size:13px;font-weight:500;z-index:200;opacity:0;transition:opacity .2s;pointer-events:none;white-space:nowrap}
 #toast.on{opacity:1}
 #toast.ok{background:var(–green)}
