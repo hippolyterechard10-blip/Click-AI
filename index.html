@@ -237,7 +237,8 @@ body{
     <div class="sb-foot">
       <button class="keys-btn" data-action="settings" onclick="openOv('ov-settings')">🔑 API Keys &amp; Settings</button>
     </div>
-  </div>
+    <button onclick="microTest()" style="margin:6px 8px;padding:8px;background:#C0392B;color:white;border:none;border-radius:8px;font-size:11px;font-weight:700;cursor:pointer;">🔴 MICRO TEST</button>
+</div>
 
   <!-- MAIN -->
 
@@ -246,7 +247,7 @@ body{
       <button id="menu-btn" data-action="toggle-sb" onclick="toggleSB()">☰</button>
       <div class="top-info">
         <div id="top-title">AI Panel</div>
-        <div id="top-sub">3 AIs · 1 synthesized answer <span style="background:#C9A84C;color:#2C2416;font-size:9px;font-weight:700;padding:1px 5px;border-radius:4px;margin-left:4px">v8</span></div>
+        <div id="top-sub">3 AIs · 1 synthesized answer <span style="background:#C9A84C;color:#2C2416;font-size:9px;font-weight:700;padding:1px 5px;border-radius:4px;margin-left:4px">v9</span></div>
       </div>
       <div class="top-right">
         <div id="badges"></div>
@@ -343,6 +344,17 @@ body{
 
   <div id="toast"></div>
 </div>
+
+<script>
+/* ISOLATED TEST - separate from main app */
+function microTest(){
+  var d=document.createElement('div');
+  d.style.cssText='position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(255,0,0,0.9);z-index:999999;display:flex;align-items:center;justify-content:center;font-size:28px;font-weight:bold;color:white;cursor:pointer;font-family:sans-serif;';
+  d.textContent='JS WORKS - TAP TO CLOSE';
+  d.onclick=function(){if(d.parentNode)d.parentNode.removeChild(d);};
+  document.body.appendChild(d);
+}
+</script>
 
 <script>
 // Error reporter
