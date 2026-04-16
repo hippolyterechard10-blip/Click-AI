@@ -31,6 +31,12 @@ create table if not exists public.shared_links (
   created_at  timestamptz default now()
 );
 
+create table if not exists public.user_settings (
+  user_id     uuid primary key references auth.users(id) on delete cascade,
+  api_keys    jsonb not null default '{}'::jsonb,
+  updated_at  timestamptz default now()
+);
+
 create index if not exists conversations_user_idx   on public.conversations(user_id);
 create index if not exists conversations_proj_idx   on public.conversations(project_id);
 create index if not exists projects_user_idx        on public.projects(user_id);
@@ -40,6 +46,7 @@ create index if not exists projects_user_idx        on public.projects(user_id);
 alter table public.projects       enable row level security;
 alter table public.conversations  enable row level security;
 alter table public.shared_links   enable row level security;
+alter table public.user_settings  enable row level security;
 
 -- Projects: owner-only
 drop policy if exists "projects_select_own"  on public.projects;
@@ -71,6 +78,15 @@ drop policy if exists "shared_delete_own"    on public.shared_links;
 create policy "shared_select_public" on public.shared_links for select using (true);
 create policy "shared_insert_own"    on public.shared_links for insert with check (auth.uid() = user_id);
 create policy "shared_delete_own"    on public.shared_links for delete using (auth.uid() = user_id);
+
+-- User settings: owner-only
+drop policy if exists "settings_select_own" on public.user_settings;
+drop policy if exists "settings_insert_own" on public.user_settings;
+drop policy if exists "settings_update_own" on public.user_settings;
+
+create policy "settings_select_own" on public.user_settings for select using (auth.uid() = user_id);
+create policy "settings_insert_own" on public.user_settings for insert with check (auth.uid() = user_id);
+create policy "settings_update_own" on public.user_settings for update using (auth.uid() = user_id);
 
 -- ---------- Auth redirect URLs ----------
 -- In Supabase Dashboard → Authentication → URL configuration, add:
