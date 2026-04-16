@@ -257,7 +257,7 @@
       <div class="inp-side">
         <button class="inp-ico" id="cam-btn" type="button">📷</button>
         <button class="inp-ico" id="mic-btn" type="button">🎤</button>
-        <button class="inp-ico" id="web-btn" type="button">🔍</button>
+        <button class="inp-ico web-on" id="web-btn" type="button">🔍</button>
       </div>
       <div class="inp-box">
         <textarea id="q-in" placeholder="Your question…" rows="1" enterkeyhint="send"></textarea>
@@ -277,18 +277,18 @@
       <div class="s-row"><span class="s-key" style="color:#4A7FA5">Gemini</span><input class="s-in" id="k-gem" type="password" autocomplete="off" placeholder="AIza…" /></div>
       <div class="s-row"><span class="s-key" style="color:#27AE60">OpenAI</span><input class="s-in" id="k-oai" type="password" autocomplete="off" placeholder="sk-…" /></div>
     </div>
-    <div class="s-note">🔒 Clés stockées dans ton navigateur uniquement. Le bouton 🔍 active la recherche web native (Claude web_search, Gemini google_search, GPT-4o search-preview) — comme dans les apps.</div>
-    <div class="s-sec">☁️ Cloud sync &amp; partage (Supabase)</div>
-    <div class="s-group">
-      <div class="s-row"><span class="s-key" style="color:#4A7FA5">URL</span><input class="s-in" id="sb-url" autocomplete="off" placeholder="https://xxx.supabase.co" /></div>
-      <div class="s-row"><span class="s-key" style="color:#4A7FA5">Anon key</span><input class="s-in" id="sb-anon" type="password" autocomplete="off" placeholder="eyJhbGciOi…" /></div>
-    </div>
+    <div class="s-note">🔒 Clés stockées dans ton navigateur uniquement. Recherche web native toujours active (Claude web_search, Gemini google_search, GPT-4o search-preview).</div>
+    <div class="s-sec">👤 Compte &amp; sync cloud</div>
     <div class="s-group" id="sb-auth-group">
       <div class="s-row" id="sb-signed-out"><span class="s-lbl">Email</span><input class="s-in" id="sb-email" type="text" autocomplete="email" placeholder="you@example.com" inputmode="email" /></div>
-      <div class="s-row" id="sb-signed-out-btn" style="cursor:pointer"><span class="s-lbl" style="color:#C9A84C;font-weight:600" id="sb-signin-lbl">Envoyer le magic link</span></div>
-      <div class="s-row" id="sb-signed-in" style="display:none"><span class="s-lbl" id="sb-user-email">—</span><button class="top-btn" id="sb-signout" type="button" style="background:#F5F0E8">Sign out</button></div>
+      <div class="s-row" id="sb-signed-out-pwd"><span class="s-lbl">Mot de passe</span><input class="s-in" id="sb-pwd" type="password" autocomplete="current-password" placeholder="••••••••" /></div>
+      <div class="s-row" id="sb-signed-out-btns" style="display:flex;gap:8px;padding:10px 14px">
+        <button class="s-btn prim" id="sb-btn-signin" type="button" style="flex:1;margin:0;padding:10px">Se connecter</button>
+        <button class="s-btn" id="sb-btn-signup" type="button" style="flex:1;margin:0;padding:10px;background:#F5F0E8;color:#2C2416">Créer un compte</button>
+      </div>
+      <div class="s-row" id="sb-signed-in" style="display:none"><span class="s-lbl" id="sb-user-email">—</span><button class="top-btn" id="sb-signout" type="button" style="background:#F5F0E8">Déconnexion</button></div>
     </div>
-    <div class="s-note" id="sb-status">Non connecté · tout est local.</div>
+    <div class="s-note" id="sb-status">Crée un compte pour synchroniser tes conversations entre appareils et partager par lien.</div>
     <div class="s-sec">📂 Projects</div>
     <div class="s-group">
       <div class="s-row" id="btn-new-proj" style="cursor:pointer"><span class="s-lbl">New Project</span><span class="s-arr">›</span></div>
@@ -344,10 +344,12 @@
     });
 
     var COLORS = ['#C9A84C','#4A7FA5','#A85C3A','#4A7A5A','#6B5B95','#8B6914','#3A7A7A','#C0392B'];
-    var KEYS = ['k-ant','k-gem','k-oai','sb-url','sb-anon'];
+    var KEYS = ['k-ant','k-gem','k-oai'];
     var TIMEOUT = 25000;
+    var SUPABASE_URL = 'https://fvmmjdodtgibbdutxvjc.supabase.co';
+    var SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ2bW1qZG9kdGdpYmJkdXR4dmpjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYyODUwNjcsImV4cCI6MjA5MTg2MTA2N30.-3Sun_988HNn52cLnXOyRuALDwKIFzf7zwI6ONRSIG0';
 
-    var busy = false, editPid = null, voiceRec = null, voiceOn = false, webOn = false;
+    var busy = false, editPid = null, voiceRec = null, voiceOn = false, webOn = true;
     var imgs = [], projs = [], pid = null, convs = [], cid = null;
     var sbc = null, sbUser = null, sharedView = false;
 
@@ -1200,28 +1202,30 @@
 
     function updateAuthUI(){
       var out = document.getElementById('sb-signed-out');
-      var outBtn = document.getElementById('sb-signed-out-btn');
+      var outPwd = document.getElementById('sb-signed-out-pwd');
+      var outBtns = document.getElementById('sb-signed-out-btns');
       var ind = document.getElementById('sb-signed-in');
       var st = document.getElementById('sb-status');
       if(!out) return;
       if(sbUser){
         out.style.display = 'none';
-        outBtn.style.display = 'none';
+        outPwd.style.display = 'none';
+        outBtns.style.display = 'none';
         ind.style.display = 'flex';
-        document.getElementById('sb-user-email').textContent = sbUser.email || 'Signed in';
+        document.getElementById('sb-user-email').textContent = sbUser.email || 'Connecté';
         if(st) st.textContent = '✓ Connecté · tes conversations sont synchronisées.';
       } else {
         out.style.display = 'flex';
-        outBtn.style.display = 'flex';
+        outPwd.style.display = 'flex';
+        outBtns.style.display = 'flex';
         ind.style.display = 'none';
-        if(st) st.textContent = sbc ? 'Prêt · entre ton email pour te connecter.' : 'Ajoute URL + anon key pour activer la synchro cloud.';
+        if(st) st.textContent = 'Crée un compte pour synchroniser tes conversations entre appareils et partager par lien.';
       }
     }
 
     function initSupabase(){
-      var url = (getKey('sb-url') || '').replace(/\/+$/, '');
-      var anon = getKey('sb-anon');
-      if(!url || !anon){ updateAuthUI(); return; }
+      var url = SUPABASE_URL;
+      var anon = SUPABASE_ANON;
 
       function boot(){
         if(!window._supabaseCreateClient) return;
@@ -1249,24 +1253,41 @@
       else window.addEventListener('supabase-sdk-ready', boot, {once:true});
     }
 
-    async function sbSignIn(){
+    function getAuthCreds(){
       var email = (document.getElementById('sb-email').value || '').trim();
-      if(!email){ showToast('Entre ton email','err'); return; }
+      var pwd = (document.getElementById('sb-pwd').value || '');
+      if(!email){ showToast('Entre ton email','err'); return null; }
+      if(pwd.length < 6){ showToast('Mot de passe : 6 caractères minimum','err'); return null; }
       if(!sbc){ initSupabase(); }
-      if(!sbc){ showToast('Configure URL + anon key','err'); return; }
-      var lbl = document.getElementById('sb-signin-lbl');
-      lbl.textContent = 'Envoi…';
+      if(!sbc){ showToast('Erreur Supabase','err'); return null; }
+      return {email:email, password:pwd};
+    }
+
+    async function sbSignIn(){
+      var c = getAuthCreds(); if(!c) return;
       try{
-        var r = await sbc.auth.signInWithOtp({
-          email: email,
-          options:{emailRedirectTo: location.origin + location.pathname}
-        });
+        var r = await sbc.auth.signInWithPassword(c);
         if(r.error) throw r.error;
-        lbl.textContent = '✉️ Vérifie tes mails';
-        showToast('Magic link envoyé à ' + email,'ok', 4000);
+        showToast('✓ Connecté','ok');
       }catch(e){
-        lbl.textContent = 'Envoyer le magic link';
-        showToast('Sign-in: ' + e.message, 'err');
+        showToast(e.message === 'Invalid login credentials'
+          ? 'Email ou mot de passe incorrect'
+          : 'Connexion: ' + e.message, 'err', 4000);
+      }
+    }
+
+    async function sbSignUp(){
+      var c = getAuthCreds(); if(!c) return;
+      try{
+        var r = await sbc.auth.signUp(c);
+        if(r.error) throw r.error;
+        if(r.data && r.data.user && !r.data.user.confirmed_at){
+          showToast('✉️ Vérifie tes mails pour confirmer','ok', 5000);
+        } else {
+          showToast('✓ Compte créé et connecté','ok');
+        }
+      }catch(e){
+        showToast('Inscription: ' + e.message, 'err', 4000);
       }
     }
 
@@ -1369,7 +1390,6 @@
       if(!c){ showToast('No conversation'); return; }
       if(!c.turns || !c.turns.length){ showToast('Pose une question d\'abord'); return; }
       if(!sbc){ initSupabase(); }
-      if(!sbc){ showToast('Configure Supabase pour partager','err'); openOv('ov-settings'); return; }
       if(!sbUser){ showToast('Connecte-toi pour partager','err'); openOv('ov-settings'); return; }
 
       var id = shortId();
@@ -1394,17 +1414,11 @@
 
     async function openShared(id){
       sharedView = true;
-      var url = getKey('sb-url'), anon = getKey('sb-anon');
-      if(!url || !anon){
-        showToast('Ce lien nécessite la config Supabase','err',5000);
-        openOv('ov-settings');
-        return;
-      }
       if(!sbc && window._supabaseCreateClient){
-        sbc = window._supabaseCreateClient(url, anon);
+        sbc = window._supabaseCreateClient(SUPABASE_URL, SUPABASE_ANON);
       } else if(!sbc){
         await new Promise(function(res){ window.addEventListener('supabase-sdk-ready', res, {once:true}); });
-        sbc = window._supabaseCreateClient(url, anon);
+        sbc = window._supabaseCreateClient(SUPABASE_URL, SUPABASE_ANON);
       }
       try{
         var r = await sbc.from('shared_links').select('*').eq('id', id).single();
@@ -1518,9 +1532,10 @@ function bindEvents(){
     closeOv('ov-settings');
   });
   document.getElementById('btn-share').addEventListener('click', shareConv);
-  document.getElementById('sb-signed-out-btn').addEventListener('click', sbSignIn);
+  document.getElementById('sb-btn-signin').addEventListener('click', sbSignIn);
+  document.getElementById('sb-btn-signup').addEventListener('click', sbSignUp);
   document.getElementById('sb-signout').addEventListener('click', sbSignOut);
-  document.getElementById('sb-email').addEventListener('keydown', function(e){
+  document.getElementById('sb-pwd').addEventListener('keydown', function(e){
     if(e.key === 'Enter'){ e.preventDefault(); sbSignIn(); }
   });
   document.getElementById('btn-new-proj').addEventListener('click', function(){ closeOv('ov-settings'); openOv('ov-proj'); resetProj(); });
