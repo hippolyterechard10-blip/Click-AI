@@ -999,7 +999,7 @@
 
     async function apiClaude(key, msgs, useWeb){
       var body = {
-        model:'claude-sonnet-4-20250514',
+        model:'claude-sonnet-4-6',
         max_tokens:2000,
         messages:msgs
       };
@@ -1030,7 +1030,7 @@
     async function geminiRaw(key, parts, withSearch){
       var body = {contents:[{parts:parts}]};
       if(withSearch) body.tools = [{googleSearch:{}}];
-      var r = await fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=' + key, {
+      var r = await fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=' + key, {
         method:'POST',
         headers:{'Content-Type':'application/json'},
         body:JSON.stringify(body)
@@ -1085,10 +1085,10 @@
         messages:[{role:'user', content:content}]
       };
       if(useWeb && !(imgs && imgs.length)){
-        body.model = 'gpt-4o-mini-search-preview';
+        body.model = 'gpt-4o-search-preview';
         body.max_tokens = 2000;
       } else {
-        body.model = 'gpt-4o-mini';
+        body.model = 'gpt-4o';
         body.max_tokens = 2000;
       }
 
