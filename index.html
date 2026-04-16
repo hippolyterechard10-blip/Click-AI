@@ -344,7 +344,7 @@
 
     var COLORS = ['#C9A84C','#4A7FA5','#A85C3A','#4A7A5A','#6B5B95','#8B6914','#3A7A7A','#C0392B'];
     var KEYS = ['k-ant','k-gem','k-oai'];
-    var TIMEOUT = 25000;
+    var TIMEOUT = 60000;
     var SUPABASE_URL = 'https://fvmmjdodtgibbdutxvjc.supabase.co';
     var SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ2bW1qZG9kdGdpYmJkdXR4dmpjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYyODUwNjcsImV4cCI6MjA5MTg2MTA2N30.-3Sun_988HNn52cLnXOyRuALDwKIFzf7zwI6ONRSIG0';
 
@@ -859,7 +859,7 @@
       }
 
       var useWeb = !!webOn;
-      var WEB_TIMEOUT = useWeb ? 45000 : TIMEOUT;
+      var WEB_TIMEOUT = useWeb ? 90000 : TIMEOUT;
       var hist = buildHistory(conv);
 
       await Promise.all([
