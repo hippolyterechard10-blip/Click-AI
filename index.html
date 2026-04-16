@@ -1027,27 +1027,14 @@
       return out;
     }
 
-    async function apiGemini(key, q, imgs, useWeb){
-      var parts = [];
-      if(imgs && imgs.length){
-        imgs.forEach(function(i){
-          parts.push({inlineData:{mimeType:i.mime, data:i.b64}});
-        });
-      }
-      if(q) parts.push({text:q});
-      if(!parts.length) parts = [{text:'.'}];
-
+    async function geminiRaw(key, parts, withSearch){
       var body = {contents:[{parts:parts}]};
-      if(useWeb && !(imgs && imgs.length)){
-        body.tools = [{google_search:{}}];
-      }
-
+      if(withSearch) body.tools = [{googleSearch:{}}];
       var r = await fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=' + key, {
         method:'POST',
         headers:{'Content-Type':'application/json'},
         body:JSON.stringify(body)
       });
-
       var d = await r.json();
       if(d.error) throw new Error(d.error.message);
       if(d.promptFeedback && d.promptFeedback.blockReason){
@@ -1065,6 +1052,23 @@
       cand.content.parts.forEach(function(p){ if(p.text) txt += p.text; });
       if(!txt) throw new Error('Gemini returned no text');
       return txt;
+    }
+
+    async function apiGemini(key, q, imgs, useWeb){
+      var parts = [];
+      if(imgs && imgs.length){
+        imgs.forEach(function(i){
+          parts.push({inlineData:{mimeType:i.mime, data:i.b64}});
+        });
+      }
+      if(q) parts.push({text:q});
+      if(!parts.length) parts = [{text:'.'}];
+
+      var wantSearch = useWeb && !(imgs && imgs.length);
+      if(wantSearch){
+        try{ return await geminiRaw(key, parts, true); }catch(e){}
+      }
+      return await geminiRaw(key, parts, false);
     }
 
     async function apiGPT(key, q, imgs, useWeb){
