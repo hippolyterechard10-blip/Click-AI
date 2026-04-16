@@ -860,15 +860,16 @@
 
       var useWeb = !!webOn;
       var WEB_TIMEOUT = useWeb ? 45000 : TIMEOUT;
+      var hist = buildHistory(conv);
 
       await Promise.all([
-        wt(apiClaude(antKey, claudeMsgs(q, curImgs), useWeb), WEB_TIMEOUT, 'Claude')
+        wt(apiClaude(antKey, claudeMsgs(q, curImgs, hist), useWeb), WEB_TIMEOUT, 'Claude')
           .then(function(r){ res.claude = r; dot('claude','ok','✓'); })
           .catch(function(e){ dot('claude','er', e.message.slice(0,28)); }),
-        gemKey ? wt(apiGemini(gemKey, q, curImgs, useWeb), WEB_TIMEOUT, 'Gemini')
+        gemKey ? wt(apiGemini(gemKey, q, curImgs, useWeb, hist), WEB_TIMEOUT, 'Gemini')
           .then(function(r){ res.gemini = r; dot('gemini','ok','✓'); })
           .catch(function(e){ dot('gemini','er', e.message.slice(0,28)); }) : Promise.resolve(),
-        oaiKey ? wt(apiGPT(oaiKey, q, curImgs, useWeb), WEB_TIMEOUT, 'GPT-4o')
+        oaiKey ? wt(apiGPT(oaiKey, q, curImgs, useWeb, hist), WEB_TIMEOUT, 'GPT-4o')
           .then(function(r){ res.gpt = r; dot('gpt','ok','✓'); })
           .catch(function(e){ dot('gpt','er', e.message.slice(0,28)); }) : Promise.resolve()
       ]);
@@ -988,13 +989,31 @@
       return wrap;
     }
 
-    function claudeMsgs(q, imgs){
-      if(!imgs || !imgs.length) return [{role:'user', content:q || '.'}];
-      var parts = imgs.map(function(i){
-        return {type:'image', source:{type:'base64', media_type:i.mime, data:i.b64}};
+    function buildHistory(conv){
+      var hist = [];
+      if(!conv || !conv.turns) return hist;
+      conv.turns.forEach(function(t){
+        if(t.q) hist.push({role:'user', text:t.q});
+        if(t.rec) hist.push({role:'assistant', text:t.rec});
       });
-      if(q) parts.push({type:'text', text:q});
-      return [{role:'user', content:parts}];
+      return hist;
+    }
+
+    function claudeMsgs(q, imgs, history){
+      var msgs = [];
+      (history || []).forEach(function(h){
+        msgs.push({role: h.role, content: h.text});
+      });
+      if(!imgs || !imgs.length){
+        msgs.push({role:'user', content:q || '.'});
+      } else {
+        var parts = imgs.map(function(i){
+          return {type:'image', source:{type:'base64', media_type:i.mime, data:i.b64}};
+        });
+        if(q) parts.push({type:'text', text:q});
+        msgs.push({role:'user', content:parts});
+      }
+      return msgs;
     }
 
     async function apiClaude(key, msgs, useWeb){
@@ -1027,8 +1046,8 @@
       return out;
     }
 
-    async function geminiRaw(key, parts, withSearch){
-      var body = {contents:[{parts:parts}]};
+    async function geminiRaw(key, contents, withSearch){
+      var body = {contents:contents};
       if(withSearch) body.tools = [{googleSearch:{}}];
       var r = await fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=' + key, {
         method:'POST',
@@ -1054,7 +1073,11 @@
       return txt;
     }
 
-    async function apiGemini(key, q, imgs, useWeb){
+    async function apiGemini(key, q, imgs, useWeb, history){
+      var contents = [];
+      (history || []).forEach(function(h){
+        contents.push({role: h.role === 'assistant' ? 'model' : 'user', parts:[{text:h.text}]});
+      });
       var parts = [];
       if(imgs && imgs.length){
         imgs.forEach(function(i){
@@ -1063,15 +1086,20 @@
       }
       if(q) parts.push({text:q});
       if(!parts.length) parts = [{text:'.'}];
+      contents.push({role:'user', parts:parts});
 
       var wantSearch = useWeb && !(imgs && imgs.length);
       if(wantSearch){
-        try{ return await geminiRaw(key, parts, true); }catch(e){}
+        try{ return await geminiRaw(key, contents, true); }catch(e){}
       }
-      return await geminiRaw(key, parts, false);
+      return await geminiRaw(key, contents, false);
     }
 
-    async function apiGPT(key, q, imgs, useWeb){
+    async function apiGPT(key, q, imgs, useWeb, history){
+      var msgs = [];
+      (history || []).forEach(function(h){
+        msgs.push({role: h.role, content: h.text});
+      });
       var content = [];
       if(imgs && imgs.length){
         imgs.forEach(function(i){
@@ -1080,9 +1108,10 @@
       }
       if(q) content.push({type:'text', text:q});
       if(!content.length) content = [{type:'text', text:'.'}];
+      msgs.push({role:'user', content:content});
 
       var body = {
-        messages:[{role:'user', content:content}]
+        messages:msgs
       };
       if(useWeb && !(imgs && imgs.length)){
         body.model = 'gpt-4o-search-preview';
