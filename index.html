@@ -284,7 +284,7 @@
       <div class="s-row"><span class="s-key" style="color:#4A7FA5">Anon key</span><input class="s-in" id="sb-anon" type="password" autocomplete="off" placeholder="eyJhbGciOi…" /></div>
     </div>
     <div class="s-group" id="sb-auth-group">
-      <div class="s-row" id="sb-signed-out"><span class="s-lbl">Email</span><input class="s-in" id="sb-email" type="email" autocomplete="email" placeholder="you@example.com" /></div>
+      <div class="s-row" id="sb-signed-out"><span class="s-lbl">Email</span><input class="s-in" id="sb-email" type="text" autocomplete="email" placeholder="you@example.com" inputmode="email" /></div>
       <div class="s-row" id="sb-signed-out-btn" style="cursor:pointer"><span class="s-lbl" style="color:#C9A84C;font-weight:600" id="sb-signin-lbl">Envoyer le magic link</span></div>
       <div class="s-row" id="sb-signed-in" style="display:none"><span class="s-lbl" id="sb-user-email">—</span><button class="top-btn" id="sb-signout" type="button" style="background:#F5F0E8">Sign out</button></div>
     </div>
@@ -1219,7 +1219,8 @@
     }
 
     function initSupabase(){
-      var url = getKey('sb-url'), anon = getKey('sb-anon');
+      var url = (getKey('sb-url') || '').replace(/\/+$/, '');
+      var anon = getKey('sb-anon');
       if(!url || !anon){ updateAuthUI(); return; }
 
       function boot(){
