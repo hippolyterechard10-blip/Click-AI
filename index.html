@@ -372,6 +372,7 @@
         var el = document.getElementById(id);
         if(el) ls('_p_' + id, el.value);
       });
+      sbSaveKeys();
     }
 
     function loadKeys(){
@@ -1350,6 +1351,7 @@
 
     async function sbPullAll(){
       if(!sbReady()) return;
+      await sbPullKeys();
       try{
         var pr = await sbc.from('projects').select('*').order('created_at');
         if(pr.error) throw pr.error;
@@ -1425,6 +1427,46 @@
     async function sbDeleteConv(id){
       if(!sbReady()) return;
       try{ await sbc.from('conversations').delete().eq('id', id); }catch(e){}
+    }
+
+    var _keySaveTimer = null;
+    async function sbSaveKeys(){
+      if(!sbReady()) return;
+      clearTimeout(_keySaveTimer);
+      _keySaveTimer = setTimeout(async function(){
+        try{
+          var payload = {};
+          KEYS.forEach(function(id){
+            var el = document.getElementById(id);
+            if(el) payload[id] = el.value || '';
+          });
+          await sbc.from('user_settings').upsert({
+            user_id: sbUser.id,
+            api_keys: payload,
+            updated_at: new Date().toISOString()
+          });
+        }catch(e){}
+      }, 600);
+    }
+
+    async function sbPullKeys(){
+      if(!sbReady()) return;
+      try{
+        var r = await sbc.from('user_settings').select('api_keys').eq('user_id', sbUser.id).maybeSingle();
+        if(r.error) return;
+        if(!r.data || !r.data.api_keys) return;
+        var remote = r.data.api_keys;
+        KEYS.forEach(function(id){
+          if(remote[id]){
+            var el = document.getElementById(id);
+            if(el && !el.value){
+              el.value = remote[id];
+              ls('_p_' + id, remote[id]);
+            }
+          }
+        });
+        renderBadges();
+      }catch(e){}
     }
 
     function shortId(){
