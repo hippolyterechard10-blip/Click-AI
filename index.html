@@ -768,8 +768,30 @@
       }
     }
 
+    function reqNotif(){
+      if(!('Notification' in window)) return;
+      if(Notification.permission === 'default'){
+        Notification.requestPermission();
+      }
+    }
+
+    function sendNotif(title, body){
+      if(!('Notification' in window)) return;
+      if(Notification.permission !== 'granted') return;
+      if(document.visibilityState === 'visible') return;
+      try{
+        var n = new Notification(title, {
+          body: body.slice(0, 120),
+          icon: 'icon.svg',
+          tag: 'ai-panel-done'
+        });
+        n.onclick = function(){ window.focus(); n.close(); };
+      }catch(e){}
+    }
+
     async function ask(){
       if(busy) return;
+      reqNotif();
 
       var q = document.getElementById('q-in').value.trim();
       var curImgs = imgs.slice();
@@ -908,6 +930,8 @@
       var wrap = buildResult(ais, rec);
       turn.replaceChild(wrap, loader);
       scrollDown();
+
+      sendNotif('✦ AI Panel — réponse prête', rec || 'Les 3 IAs ont répondu.');
 
       if(!conv.turns) conv.turns = [];
       conv.turns.push({
