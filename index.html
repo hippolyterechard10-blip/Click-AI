@@ -283,8 +283,7 @@
       <div class="s-row" id="sb-signed-out"><span class="s-lbl">Email</span><input class="s-in" id="sb-email" type="text" autocomplete="email" placeholder="you@example.com" inputmode="email" /></div>
       <div class="s-row" id="sb-signed-out-pwd"><span class="s-lbl">Mot de passe</span><input class="s-in" id="sb-pwd" type="password" autocomplete="current-password" placeholder="••••••••" /></div>
       <div class="s-row" id="sb-signed-out-btns" style="display:flex;gap:8px;padding:10px 14px">
-        <button class="s-btn prim" id="sb-btn-signin" type="button" style="flex:1;margin:0;padding:10px">Se connecter</button>
-        <button class="s-btn" id="sb-btn-signup" type="button" style="flex:1;margin:0;padding:10px;background:#F5F0E8;color:#2C2416">Créer un compte</button>
+        <button class="s-btn prim" id="sb-btn-go" type="button" style="flex:1;margin:0;padding:10px">Connexion / Inscription</button>
       </div>
       <div class="s-row" id="sb-signed-in" style="display:none"><span class="s-lbl" id="sb-user-email">—</span><button class="top-btn" id="sb-signout" type="button" style="background:#F5F0E8">Déconnexion</button></div>
     </div>
@@ -1263,32 +1262,25 @@
       return {email:email, password:pwd};
     }
 
-    async function sbSignIn(){
+    async function sbAuth(){
       var c = getAuthCreds(); if(!c) return;
+      var btn = document.getElementById('sb-btn-go');
+      btn.textContent = '…';
       try{
         var r = await sbc.auth.signInWithPassword(c);
-        if(r.error) throw r.error;
-        showToast('✓ Connecté','ok');
-      }catch(e){
-        showToast(e.message === 'Invalid login credentials'
-          ? 'Email ou mot de passe incorrect'
-          : 'Connexion: ' + e.message, 'err', 4000);
-      }
-    }
-
-    async function sbSignUp(){
-      var c = getAuthCreds(); if(!c) return;
-      try{
-        var r = await sbc.auth.signUp(c);
-        if(r.error) throw r.error;
-        if(r.data && r.data.user && !r.data.user.confirmed_at){
-          showToast('✉️ Vérifie tes mails pour confirmer','ok', 5000);
-        } else {
+        if(r.error && (r.error.message === 'Invalid login credentials' || r.error.status === 400)){
+          var s = await sbc.auth.signUp(c);
+          if(s.error) throw s.error;
           showToast('✓ Compte créé et connecté','ok');
+        } else if(r.error){
+          throw r.error;
+        } else {
+          showToast('✓ Connecté','ok');
         }
       }catch(e){
-        showToast('Inscription: ' + e.message, 'err', 4000);
+        showToast(e.message || 'Erreur de connexion', 'err', 4000);
       }
+      btn.textContent = 'Connexion / Inscription';
     }
 
     async function sbSignOut(){
@@ -1532,11 +1524,10 @@ function bindEvents(){
     closeOv('ov-settings');
   });
   document.getElementById('btn-share').addEventListener('click', shareConv);
-  document.getElementById('sb-btn-signin').addEventListener('click', sbSignIn);
-  document.getElementById('sb-btn-signup').addEventListener('click', sbSignUp);
+  document.getElementById('sb-btn-go').addEventListener('click', sbAuth);
   document.getElementById('sb-signout').addEventListener('click', sbSignOut);
   document.getElementById('sb-pwd').addEventListener('keydown', function(e){
-    if(e.key === 'Enter'){ e.preventDefault(); sbSignIn(); }
+    if(e.key === 'Enter'){ e.preventDefault(); sbAuth(); }
   });
   document.getElementById('btn-new-proj').addEventListener('click', function(){ closeOv('ov-settings'); openOv('ov-proj'); resetProj(); });
   document.getElementById('btn-edit-proj').addEventListener('click', function(){ closeOv('ov-settings'); editProj(); });
